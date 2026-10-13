@@ -1,1365 +1,2633 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es-AR">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
+<meta name="color-scheme" content="dark">
 <meta name="theme-color" content="#050b13">
-<title>AGUS · Asistente personal</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="AGUS · Asistente personal con personalidad JARVIS, voz masculina, matemáticas y comandos por voz.">
+<title>AGUS · Asistente Personal</title>
 <style>
-  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  :root{
-    --bg:#050b13;
-    --panel:#0a1727;
-    --cyan:#48e4ff;
-    --cyan-soft:rgba(72,228,255,.14);
-    --border:rgba(72,228,255,.22);
-    --text:#e4f7ff;
-    --muted:#7f9cae;
-    --ok:#56f0b0;
-    --warn:#ffbd70;
-    --danger:#ff4d5e;
-    --radius:14px;
-  }
-  html,body{
-    width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-    -webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;
-    overscroll-behavior:none;
-  }
-  body{
-    background:radial-gradient(ellipse at 50% 0%,#0e2b44 0%,#050b13 60%);
-    position:fixed;inset:0;
-  }
-  .app{
-    display:grid;grid-template-rows:auto auto 1fr auto;
-    height:100dvh;height:100vh;
-    padding-top:env(safe-area-inset-top);
-    padding-bottom:env(safe-area-inset-bottom);
-    padding-left:env(safe-area-inset-left);
-    padding-right:env(safe-area-inset-right);
-  }
+/* =========================================================
+   RESET Y BASE
+   ========================================================= */
+*,*::before,*::after{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  -webkit-tap-highlight-color:transparent;
+  -webkit-touch-callout:none;
+}
+html{
+  height:100%;
+  -webkit-text-size-adjust:100%;
+}
+body{
+  height:100%;
+  min-height:100dvh;
+  overflow:hidden;
+  overscroll-behavior:none;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+  background:#050b13;
+  color:#e4f7ff;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  position:fixed;
+  inset:0;
+  user-select:none;
+  -webkit-user-select:none;
+}
 
-  /* HEADER */
-  header{
-    display:flex;align-items:center;justify-content:space-between;
-    padding:10px 14px;background:rgba(4,12,22,.85);
-    border-bottom:1px solid var(--border);
-    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
-    gap:8px;min-width:0;
-  }
-  .brand{display:flex;align-items:center;gap:8px;min-width:0;flex:1}
-  .logo{
-    width:28px;height:28px;border-radius:50%;
-    border:2px solid var(--cyan);
-    box-shadow:0 0 10px rgba(72,228,255,.5);
-    position:relative;flex-shrink:0;
-  }
-  .logo::after{
-    content:"";position:absolute;inset:5px;border-radius:50%;
-    background:var(--cyan);animation:pulse 2s infinite;
-  }
-  h1{
-    font-size:14px;letter-spacing:2.5px;color:#fff;font-weight:700;
-    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  }
-  .actions{display:flex;gap:6px;flex-shrink:0}
-  .btn{
-    background:var(--cyan-soft);border:1px solid var(--border);color:var(--text);
-    border-radius:8px;padding:7px 10px;font-size:12px;cursor:pointer;
-    font-family:inherit;white-space:nowrap;min-height:34px;
-    display:inline-flex;align-items:center;gap:4px;transition:background .15s;
-  }
-  .btn:active{background:rgba(72,228,255,.25)}
-  .btn.primary{background:var(--cyan);color:#04141c;border-color:var(--cyan)}
+/* =========================================================
+   VARIABLES DEL TEMA (se actualizan por JS)
+   ========================================================= */
+:root{
+  --rgb:72,228,255;
+  --hex:#48e4ff;
+  --glow:rgba(72,228,255,.55);
+  --glow-soft:rgba(72,228,255,.15);
+  --glow-mid:rgba(72,228,255,.35);
+  --border:rgba(72,228,255,.22);
+  --border-strong:rgba(72,228,255,.45);
+  --text:#e4f7ff;
+  --muted:#83a4b8;
+  --bg:#050b13;
+  --panel:rgba(8,20,34,.82);
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+  --safe-left:env(safe-area-inset-left,0px);
+  --safe-right:env(safe-area-inset-right,0px);
+}
 
-  /* REACTOR */
-  .reactor-bar{
-    display:flex;align-items:center;gap:12px;padding:10px 14px;
-    background:rgba(8,20,34,.6);border-bottom:1px solid var(--border);
-  }
-  .reactor{width:44px;height:44px;position:relative;flex-shrink:0;display:grid;place-items:center}
-  .ring{position:absolute;border:1px solid var(--border);border-radius:50%}
-  .r1{inset:0;border-top-color:var(--cyan);border-bottom-color:var(--cyan);animation:spin 8s linear infinite}
-  .r2{inset:6px;border-left-color:var(--cyan);border-right-color:var(--cyan);animation:spin 5s linear infinite reverse}
-  .core{
-    width:18px;height:18px;border-radius:50%;
-    background:radial-gradient(circle,#fff,var(--cyan) 60%,transparent);
-    box-shadow:0 0 18px var(--cyan);animation:pulse 2.5s infinite;
-  }
-  body.speaking .core{background:radial-gradient(circle,#fff,var(--warn) 60%,transparent);box-shadow:0 0 18px var(--warn);animation:pulse .6s infinite}
-  body.listening .core{background:radial-gradient(circle,#fff,var(--ok) 60%,transparent);box-shadow:0 0 18px var(--ok)}
-  .reactor-info{flex:1;min-width:0}
-  .status-line{
-    font-size:10px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;
-    margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  }
-  .state-line{font-size:13px;color:#fff;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .voice-select{
-    background:#091725;border:1px solid var(--border);border-radius:8px;color:var(--text);
-    padding:6px 8px;font-size:11px;max-width:110px;flex-shrink:0;font-family:inherit;
-  }
+/* =========================================================
+   FONDO ANIMADO
+   ========================================================= */
+#bgCanvas{
+  position:fixed;
+  inset:0;
+  z-index:0;
+  opacity:.55;
+  pointer-events:none;
+}
+.fondo-gradiente{
+  position:fixed;
+  inset:0;
+  z-index:0;
+  background:radial-gradient(ellipse at 50% -15%, var(--glow-soft) 0%, #071521 42%, #050b13 78%);
+  transition:background 1s ease;
+  pointer-events:none;
+}
+.fondo-scanlines{
+  position:fixed;
+  inset:0;
+  z-index:1;
+  background:repeating-linear-gradient(to bottom, var(--glow-soft) 0 1px, transparent 1px 4px);
+  opacity:.14;
+  pointer-events:none;
+  mix-blend-mode:screen;
+}
+.fondo-vignette{
+  position:fixed;
+  inset:0;
+  z-index:1;
+  background:radial-gradient(ellipse at center, transparent 45%, rgba(0,0,0,.6) 100%);
+  pointer-events:none;
+}
 
-  /* CHAT */
-  .chat{display:flex;flex-direction:column;overflow:hidden;min-height:0;background:rgba(8,20,34,.4)}
-  .messages{
-    flex:1;overflow-y:auto;padding:12px 12px 8px;
-    display:flex;flex-direction:column;gap:10px;
-    -webkit-overflow-scrolling:touch;scroll-behavior:smooth;
-  }
-  .msg{
-    max-width:88%;padding:10px 13px;border-radius:14px;font-size:14px;line-height:1.5;
-    word-wrap:break-word;overflow-wrap:anywhere;white-space:pre-wrap;animation:fade .2s ease;
-  }
-  .msg.bot{
-    align-self:flex-start;background:rgba(72,228,255,.08);
-    border:1px solid var(--border);border-left:3px solid var(--cyan);
-    border-radius:4px 14px 14px 14px;color:#dff7ff;
-  }
-  .msg.user{
-    align-self:flex-end;background:rgba(72,228,255,.16);
-    border:1px solid rgba(72,228,255,.4);border-radius:14px 4px 14px 14px;color:#fff;
-  }
-  .msg.system{
-    align-self:center;background:rgba(255,189,112,.08);
-    border:1px solid rgba(255,189,112,.3);color:#ffd9ae;
-    font-size:11px;padding:6px 12px;border-radius:20px;max-width:92%;text-align:center;
-  }
-  .msg.action{
-    align-self:center;background:rgba(72,228,255,.1);border:1px solid var(--border);
-    color:#cfeef8;font-size:11px;padding:6px 12px;border-radius:20px;text-align:center;
-  }
-  .msg a{color:var(--cyan);text-decoration:underline}
-  .msg .src{
-    margin-top:8px;padding-top:8px;border-top:1px solid var(--border);
-    font-size:11px;display:flex;flex-direction:column;gap:4px;
-  }
-  .msg .src b{color:var(--muted);font-weight:600}
-  .typing{
-    display:flex;gap:4px;padding:12px 14px;align-self:flex-start;
-    background:rgba(72,228,255,.08);border:1px solid var(--border);
-    border-radius:4px 14px 14px 14px;
-  }
-  .typing i{width:6px;height:6px;border-radius:50%;background:var(--cyan);animation:blink 1s infinite}
-  .typing i:nth-child(2){animation-delay:.15s}
-  .typing i:nth-child(3){animation-delay:.3s}
+/* =========================================================
+   LAYOUT PRINCIPAL
+   ========================================================= */
+.app{
+  position:relative;
+  z-index:2;
+  height:100dvh;
+  display:grid;
+  grid-template-rows:auto 1fr;
+  padding-left:var(--safe-left);
+  padding-right:var(--safe-right);
+}
 
-  /* CHIPS + FORM */
-  .chips{
-    display:flex;gap:6px;padding:8px 10px;overflow-x:auto;scrollbar-width:none;
-    border-top:1px solid var(--border);background:rgba(3,10,18,.6);
-  }
-  .chips::-webkit-scrollbar{display:none}
-  .chip{
-    flex-shrink:0;padding:7px 12px;border:1px solid var(--border);
-    background:var(--cyan-soft);color:#cfeef8;border-radius:20px;font-size:12px;
-    cursor:pointer;font-family:inherit;white-space:nowrap;min-height:32px;
-  }
-  .chip:active{background:rgba(72,228,255,.25)}
-  form{
-    display:flex;gap:8px;align-items:flex-end;padding:10px;
-    background:rgba(3,10,18,.85);border-top:1px solid var(--border);
-  }
-  .mic,.send{
-    width:44px;height:44px;border-radius:12px;border:1px solid var(--border);
-    background:var(--cyan-soft);color:var(--cyan);font-size:18px;cursor:pointer;
-    display:grid;place-items:center;flex-shrink:0;font-family:inherit;
-  }
-  .mic.on{background:var(--ok);color:#04251a;border-color:var(--ok);animation:pulse 1s infinite}
-  .send{background:var(--cyan);color:#04141c;border-color:var(--cyan)}
-  input[type=text],input[type=password]{
-    flex:1;min-width:0;min-height:44px;padding:11px 14px;
-    background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:12px;
-    color:#eefbff;font-size:16px;font-family:inherit;outline:none;
-  }
-  input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(72,228,255,.1)}
-  input::placeholder{color:#557080}
+/* ---------- HEADER ---------- */
+.header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:calc(10px + var(--safe-top)) 14px 10px;
+  background:rgba(4,12,22,.78);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  transition:border-color .5s ease;
+  min-width:0;
+}
+.brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:0;
+  flex-shrink:1;
+}
+.logo{
+  position:relative;
+  flex:0 0 auto;
+  width:36px;
+  height:36px;
+  border:2px solid var(--hex);
+  border-radius:50%;
+  box-shadow:0 0 18px var(--glow-soft), inset 0 0 12px var(--glow-soft);
+  transition:all .5s ease;
+}
+.logo::after{
+  content:'';
+  position:absolute;
+  inset:8px;
+  border-radius:inherit;
+  background:var(--hex);
+  box-shadow:0 0 12px var(--glow);
+  animation:latido 2.2s ease-in-out infinite;
+  transition:background .5s ease;
+}
+.brand-txt{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+}
+.brand-txt h1{
+  color:#fff;
+  font-size:17px;
+  font-weight:800;
+  letter-spacing:.24em;
+  line-height:1.1;
+  text-shadow:0 0 16px var(--glow);
+  transition:text-shadow .5s ease;
+}
+.brand-txt small{
+  color:var(--muted);
+  font-size:9px;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  margin-top:2px;
+}
+.header-right{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:6px;
+  flex-shrink:0;
+}
+.reloj{
+  font-variant-numeric:tabular-nums;
+  font-size:13px;
+  color:#fff;
+  letter-spacing:.04em;
+  white-space:nowrap;
+  padding:0 4px;
+}
+.estado{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:5px 9px;
+  border-radius:999px;
+  border:1px solid var(--border);
+  background:var(--glow-soft);
+  font-size:9px;
+  font-weight:700;
+  letter-spacing:.1em;
+  color:var(--hex);
+  white-space:nowrap;
+  transition:all .5s ease;
+}
+.punto{
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:#ffbd70;
+  box-shadow:0 0 8px currentColor;
+  transition:background .3s ease;
+}
+.estado.vivo .punto{background:#56f0b0}
+.estado.habla .punto{background:#ffbd70}
 
-  /* BOOT */
-  .boot{
-    position:fixed;inset:0;z-index:100;background:#040a12;
-    display:grid;place-items:center;gap:14px;transition:opacity .4s,visibility .4s;
-  }
-  .boot.hide{opacity:0;visibility:hidden;pointer-events:none}
-  .boot-orb{
-    width:70px;height:70px;border-radius:50%;
-    background:radial-gradient(circle,#fff,var(--cyan) 55%,transparent);
-    box-shadow:0 0 60px var(--cyan);animation:pulse 1.3s infinite;
-  }
-  .boot-name{color:#fff;letter-spacing:8px;font-size:20px;font-weight:700}
-  .boot-cap{color:var(--muted);font-size:11px;letter-spacing:2px;text-transform:uppercase}
-  .boot-wrap{display:grid;place-items:center;gap:14px}
+.boton-mini{
+  width:34px;
+  height:34px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  background:var(--glow-soft);
+  color:var(--text);
+  cursor:pointer;
+  display:grid;
+  place-items:center;
+  font-size:15px;
+  transition:all .2s ease;
+  padding:0;
+}
+.boton-mini:active{
+  transform:scale(.92);
+  background:var(--glow-mid);
+}
+.boton-mini.on{background:var(--hex);color:#050b13;border-color:var(--hex)}
 
-  /* MODAL */
-  .modal{
-    position:fixed;inset:0;z-index:200;background:rgba(2,8,16,.75);
-    display:none;place-items:center;padding:20px;
-    backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
-  }
-  .modal.open{display:grid}
-  .modal-box{
-    width:100%;max-width:420px;background:var(--panel);
-    border:1px solid var(--border);border-radius:var(--radius);
-    padding:20px;display:flex;flex-direction:column;gap:14px;
-    box-shadow:0 20px 60px rgba(0,0,0,.6);
-  }
-  .modal-box h2{font-size:15px;letter-spacing:2px;color:#fff;text-transform:uppercase}
-  .modal-box label{display:flex;flex-direction:column;gap:6px;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
-  .modal-box input{min-height:40px;font-size:14px;padding:9px 12px}
-  .modal-box .hint{font-size:11px;color:var(--muted);line-height:1.5}
-  .modal-box .hint b{color:var(--warn)}
-  .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:4px}
+/* ---------- MAIN ---------- */
+.main{
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  grid-template-rows:auto minmax(0,1fr);
+  gap:10px;
+  padding:10px;
+  min-height:0;
+  overflow:hidden;
+}
 
-  /* ANIM */
-  @keyframes spin{to{transform:rotate(360deg)}}
-  @keyframes pulse{0%,100%{opacity:.75}50%{opacity:1}}
-  @keyframes blink{0%,100%{opacity:.2}50%{opacity:1}}
-  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+/* ---------- PANEL REACTOR ---------- */
+.panel-nucleo{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:10px 14px;
+  border:1px solid var(--border);
+  border-radius:16px;
+  background:linear-gradient(135deg, rgba(9,32,48,.5), rgba(3,10,18,.28));
+  transition:border-color .5s ease;
+  min-width:0;
+}
+.reactor{
+  position:relative;
+  flex:0 0 auto;
+  width:66px;
+  height:66px;
+  display:grid;
+  place-items:center;
+}
+.anillo{
+  position:absolute;
+  inset:0;
+  border:1px solid var(--border);
+  border-radius:50%;
+  transition:border-color .5s ease;
+}
+.anillo.a1{
+  border-top-color:var(--hex);
+  border-bottom-color:var(--hex);
+  animation:giro 10s linear infinite;
+  box-shadow:0 0 18px -6px var(--hex);
+}
+.anillo.a2{
+  inset:12%;
+  border-left-color:var(--hex);
+  border-right-color:var(--hex);
+  animation:giro 7s linear infinite reverse;
+}
+.anillo.a3{
+  inset:24%;
+  border-top-color:var(--hex);
+  animation:giro 4s linear infinite;
+}
+.marcas{
+  position:absolute;
+  inset:-5%;
+  border-radius:50%;
+  opacity:.4;
+  background:repeating-conic-gradient(var(--hex) 0deg 1.2deg, transparent 1.2deg 7.5deg);
+  -webkit-mask:radial-gradient(circle, transparent 66%, #000 67%);
+  mask:radial-gradient(circle, transparent 66%, #000 67%);
+  animation:giro 30s linear infinite;
+  transition:background .5s ease;
+}
+.nucleo{
+  width:40%;
+  height:40%;
+  border-radius:50%;
+  background:radial-gradient(circle, #fff 0%, var(--hex) 25%, var(--hex) 50%, rgba(0,0,0,.65) 78%, transparent 100%);
+  box-shadow:0 0 32px var(--glow), inset 0 0 18px #fff;
+  animation:latido 2.6s ease-in-out infinite;
+  transition:background .5s ease, box-shadow .5s ease;
+}
+body.hablando .nucleo{
+  background:radial-gradient(circle,#fff 0,#ffe2be 25%,#ffbd70 50%,rgba(0,0,0,.65) 78%,transparent 100%);
+  box-shadow:0 0 32px rgba(255,189,112,.7);
+}
+body.escuchando .nucleo{
+  background:radial-gradient(circle,#fff 0,#c8ffe8 25%,#56f0b0 50%,rgba(0,0,0,.65) 78%,transparent 100%);
+  box-shadow:0 0 32px rgba(86,240,176,.7);
+}
+.info-nucleo{
+  flex:1;
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+}
+.etiqueta-nucleo{
+  font-size:9px;
+  letter-spacing:.2em;
+  text-transform:uppercase;
+  color:var(--muted);
+}
+.estado-nucleo{
+  font-size:13px;
+  font-weight:800;
+  letter-spacing:.1em;
+  color:#fff;
+  text-shadow:0 0 12px var(--glow);
+  transition:text-shadow .5s ease;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.ayuda-nucleo{
+  font-size:11px;
+  color:var(--muted);
+  line-height:1.35;
+  margin-top:2px;
+}
 
-  /* DESKTOP */
-  @media(min-width:900px){
-    .app{
-      grid-template-columns:340px 1fr;grid-template-rows:auto 1fr;
-      grid-template-areas:"header header" "side chat";
-    }
-    header{grid-area:header;padding:12px 24px}
-    .reactor-bar{
-      grid-area:side;flex-direction:column;justify-content:flex-start;
-      padding:24px;gap:20px;border-right:1px solid var(--border);
-      border-bottom:none;background:rgba(8,20,34,.5);
-    }
-    .reactor{width:140px;height:140px}
-    .core{width:56px;height:56px}
-    .r2{inset:18px}
-    .reactor-info{text-align:center;width:100%}
-    .state-line{font-size:16px}
-    .voice-select{max-width:none;width:100%}
-    .chat{grid-area:chat}
-    h1{font-size:18px;letter-spacing:6px}
-    .logo{width:36px;height:36px}
-    .btn{padding:8px 14px;font-size:13px}
+/* ---------- PANEL CHAT ---------- */
+.panel-chat{
+  display:flex;
+  flex-direction:column;
+  min-height:0;
+  border:1px solid var(--border);
+  border-radius:16px;
+  background:var(--panel);
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+  box-shadow:0 20px 60px rgba(0,0,0,.35), inset 0 0 60px var(--glow-soft);
+  overflow:hidden;
+  transition:border-color .5s ease;
+}
+.chat-cabecera{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  padding:11px 14px;
+  border-bottom:1px solid var(--border);
+  transition:border-color .5s ease;
+}
+.chat-cabecera h2{
+  font-size:13px;
+  font-weight:700;
+  color:#fff;
+  letter-spacing:.04em;
+}
+.pastilla-modo{
+  padding:3px 9px;
+  border-radius:999px;
+  border:1px solid var(--border);
+  background:var(--glow-soft);
+  color:var(--hex);
+  font-size:9px;
+  font-weight:700;
+  letter-spacing:.08em;
+  transition:all .5s ease;
+  white-space:nowrap;
+}
+
+.mensajes{
+  flex:1;
+  min-height:0;
+  overflow-y:auto;
+  overflow-x:hidden;
+  padding:12px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  scroll-behavior:smooth;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+}
+.mensajes::-webkit-scrollbar{width:4px}
+.mensajes::-webkit-scrollbar-thumb{background:var(--glow-mid);border-radius:4px}
+.mensajes::-webkit-scrollbar-track{background:transparent}
+
+.msg{
+  max-width:88%;
+  padding:10px 13px;
+  border-radius:4px 14px 14px 14px;
+  align-self:flex-start;
+  font-size:14px;
+  line-height:1.55;
+  word-wrap:break-word;
+  overflow-wrap:anywhere;
+  white-space:pre-wrap;
+  animation:entrada .25s ease both;
+  border:1px solid var(--border);
+  border-left:2px solid var(--hex);
+  background:var(--glow-soft);
+  color:#e0f6ff;
+  transition:border-color .5s ease;
+}
+.msg.yo{
+  align-self:flex-end;
+  border-radius:14px 4px 14px 14px;
+  border-left:1px solid var(--border);
+  border-right:2px solid var(--hex);
+  background:var(--glow-soft);
+  color:#fff;
+}
+.msg.sistema,.msg.accion{
+  align-self:center;
+  max-width:96%;
+  text-align:center;
+  border-radius:999px;
+  padding:7px 12px;
+  font-size:11px;
+  background:rgba(255,189,112,.08);
+  border:1px solid rgba(255,189,112,.28);
+  color:#ffd9ae;
+}
+.msg.accion{
+  background:var(--glow-soft);
+  border-color:var(--border-strong);
+  color:#d6f8ff;
+}
+.quien{
+  display:block;
+  font-size:9px;
+  font-weight:800;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  margin-bottom:4px;
+  color:var(--hex);
+  transition:color .5s ease;
+}
+.yo .quien{color:var(--hex)}
+
+.msg a{
+  color:var(--hex);
+  text-decoration:underline;
+  text-underline-offset:3px;
+  transition:color .5s ease;
+}
+
+.fuentes{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  margin-top:9px;
+  padding-top:8px;
+  border-top:1px solid var(--border);
+  font-size:11px;
+}
+.fuentes-titulo{
+  color:var(--muted);
+  font-weight:700;
+  letter-spacing:.05em;
+}
+
+.escribiendo{
+  display:flex;
+  gap:5px;
+  padding:14px 16px;
+  min-width:60px;
+}
+.escribiendo i{
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:var(--hex);
+  animation:parpadeo 1.1s infinite;
+}
+.escribiendo i:nth-child(2){animation-delay:.15s}
+.escribiendo i:nth-child(3){animation-delay:.3s}
+
+/* ---------- CHIPS ---------- */
+.chips{
+  display:flex;
+  gap:6px;
+  padding:0 10px 10px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  scrollbar-width:none;
+  -ms-overflow-style:none;
+}
+.chips::-webkit-scrollbar{display:none}
+.chip{
+  flex:0 0 auto;
+  padding:7px 12px;
+  border-radius:999px;
+  border:1px solid var(--border);
+  background:var(--glow-soft);
+  color:#cfeef8;
+  font-size:11px;
+  font-weight:600;
+  cursor:pointer;
+  white-space:nowrap;
+  transition:all .2s ease;
+  font-family:inherit;
+}
+.chip:active{
+  transform:scale(.94);
+  background:var(--glow-mid);
+  color:#fff;
+}
+
+/* ---------- INPUT BAR ---------- */
+.barra-input{
+  display:flex;
+  gap:7px;
+  align-items:center;
+  padding:9px 10px max(9px, var(--safe-bottom));
+  border-top:1px solid var(--border);
+  background:rgba(3,10,18,.78);
+  transition:border-color .5s ease;
+}
+.campo{
+  flex:1;
+  min-width:0;
+  height:44px;
+  padding:0 14px;
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:rgba(0,0,0,.3);
+  color:#effbff;
+  font-size:16px;
+  font-family:inherit;
+  outline:none;
+  transition:all .25s ease;
+}
+.campo:focus{
+  border-color:var(--hex);
+  box-shadow:0 0 0 3px var(--glow-soft);
+}
+.campo::placeholder{color:#7392a4}
+
+.boton-redondo{
+  flex:0 0 auto;
+  width:44px;
+  height:44px;
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:var(--glow-soft);
+  color:var(--hex);
+  cursor:pointer;
+  display:grid;
+  place-items:center;
+  font-size:17px;
+  transition:all .2s ease;
+  padding:0;
+  font-family:inherit;
+}
+.boton-redondo:active{transform:scale(.92)}
+.boton-redondo.mic.on{
+  background:#56f0b0;
+  color:#04251a;
+  border-color:#56f0b0;
+  box-shadow:0 0 20px rgba(86,240,176,.4);
+  animation:latido 1.1s infinite;
+}
+.boton-redondo.enviar{
+  background:var(--hex);
+  color:#050b13;
+  border-color:var(--hex);
+  font-weight:900;
+}
+.pie{
+  padding:0 12px 7px;
+  font-size:9px;
+  text-align:center;
+  color:#6d8da0;
+  background:rgba(3,10,18,.78);
+}
+
+/* ---------- BOOT ---------- */
+.arranque{
+  position:fixed;
+  inset:0;
+  z-index:100;
+  display:grid;
+  place-content:center;
+  justify-items:center;
+  gap:14px;
+  background:#040a12;
+  transition:opacity .6s ease, visibility .6s ease;
+}
+.arranque.oculto{
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+}
+.arranque-orb{
+  width:76px;
+  height:76px;
+  border-radius:50%;
+  background:radial-gradient(circle,#fff 0%,var(--hex) 25%,var(--hex) 52%,transparent 80%);
+  box-shadow:0 0 60px var(--glow-soft);
+  animation:latido 1.3s ease-in-out infinite;
+  transition:background .5s ease;
+}
+.arranque-nombre{
+  color:#fff;
+  font-size:22px;
+  font-weight:800;
+  letter-spacing:.4em;
+  text-shadow:0 0 24px var(--glow);
+}
+.arranque-texto{
+  color:var(--muted);
+  font-size:10px;
+  letter-spacing:.15em;
+  text-transform:uppercase;
+  text-align:center;
+  padding:0 24px;
+}
+
+/* =========================================================
+   ANIMACIONES
+   ========================================================= */
+@keyframes latido{
+  0%,100%{opacity:.85;transform:scale(1)}
+  50%{opacity:1;transform:scale(1.06)}
+}
+@keyframes giro{to{transform:rotate(360deg)}}
+@keyframes entrada{
+  from{opacity:0;transform:translateY(6px)}
+  to{opacity:1;transform:translateY(0)}
+}
+@keyframes parpadeo{
+  0%,100%{opacity:.25;transform:translateY(0)}
+  50%{opacity:1;transform:translateY(-3px)}
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (min-width:780px){
+  .main{
+    grid-template-columns:minmax(260px,.9fr) minmax(0,1.6fr);
+    grid-template-rows:minmax(0,1fr);
+    gap:16px;
+    padding:16px;
   }
+  .panel-nucleo{
+    flex-direction:column;
+    justify-content:center;
+    text-align:center;
+    gap:16px;
+    padding:20px;
+  }
+  .reactor{width:180px;height:180px}
+  .info-nucleo{align-items:center}
+  .etiqueta-nucleo{display:block}
+  .estado-nucleo{font-size:16px}
+  .ayuda-nucleo{display:block;max-width:280px;text-align:center}
+  .msg{font-size:14.5px}
+}
+
+@media (max-width:480px){
+  .header{padding:calc(8px + var(--safe-top)) 10px 8px}
+  .logo{width:32px;height:32px}
+  .logo::after{inset:7px}
+  .brand-txt h1{font-size:15px;letter-spacing:.2em}
+  .brand-txt small{display:none}
+  .reloj{font-size:11px}
+  .estado{padding:4px 7px;font-size:8px}
+  .boton-mini{width:32px;height:32px;font-size:14px}
+  .main{gap:8px;padding:8px}
+  .panel-nucleo{padding:8px 12px;gap:10px;border-radius:14px}
+  .reactor{width:56px;height:56px}
+  .nucleo{width:44%;height:44%}
+  .estado-nucleo{font-size:11px}
+  .ayuda-nucleo{display:none}
+  .panel-chat{border-radius:14px}
+  .chat-cabecera{padding:10px 12px}
+  .chat-cabecera h2{font-size:12px}
+  .pastilla-modo{font-size:8px;padding:3px 8px}
+  .mensajes{padding:10px;gap:9px}
+  .msg{font-size:13.5px;padding:9px 12px;max-width:92%}
+  .chips{padding:0 8px 8px;gap:5px}
+  .chip{padding:6px 10px;font-size:10.5px}
+  .barra-input{padding:8px 8px max(8px, var(--safe-bottom));gap:6px}
+  .campo{height:42px;font-size:16px}
+  .boton-redondo{width:42px;height:42px;font-size:16px}
+}
+
+@media (max-width:360px){
+  .brand-txt h1{font-size:13px}
+  .reloj{display:none}
+  .msg{font-size:13px}
+}
+
+@media (orientation:landscape) and (max-height:480px){
+  .panel-nucleo{display:none}
+  .main{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr)}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.01ms !important;
+  }
+}
 </style>
 </head>
 <body>
 
-<div class="boot" id="boot">
-  <div class="boot-wrap">
-    <div class="boot-orb"></div>
-    <div class="boot-name">AGUS</div>
-    <div class="boot-cap">Inicializando</div>
-  </div>
+<!-- ==================== ARRANQUE ==================== -->
+<div class="arranque" id="arranque">
+  <div class="arranque-orb"></div>
+  <div class="arranque-nombre">AGUS</div>
+  <div class="arranque-texto" id="arranqueTexto">Inicializando sistemas…</div>
 </div>
 
+<!-- ==================== FONDO ==================== -->
+<canvas id="bgCanvas" aria-hidden="true"></canvas>
+<div class="fondo-gradiente" aria-hidden="true"></div>
+<div class="fondo-scanlines" aria-hidden="true"></div>
+<div class="fondo-vignette" aria-hidden="true"></div>
+
+<!-- ==================== APP ==================== -->
 <div class="app">
-  <header>
+
+  <header class="header">
     <div class="brand">
-      <div class="logo"></div>
-      <h1>AGUS</h1>
+      <div class="logo" aria-hidden="true"></div>
+      <div class="brand-txt">
+        <h1>AGUS</h1>
+        <small>Sistema de asistencia</small>
+      </div>
     </div>
-    <div class="actions">
-      <button class="btn" id="btnAudio" type="button" title="Activar/silenciar voz">🔊</button>
-      <button class="btn" id="btnSettings" type="button" title="Configuración">⚙</button>
-      <button class="btn" id="btnClear" type="button">Limpiar</button>
+    <div class="header-right">
+      <div class="reloj" id="reloj">--:--</div>
+      <div class="estado vivo" id="estado">
+        <span class="punto"></span>
+        <span id="estadoTexto">LISTO</span>
+      </div>
+      <button class="boton-mini on" id="btnVoz" type="button" title="Activar o silenciar voz">🔊</button>
+      <button class="boton-mini" id="btnLimpiar" type="button" title="Limpiar">🧹</button>
     </div>
   </header>
 
-  <div class="reactor-bar">
-    <div class="reactor" aria-hidden="true">
-      <div class="ring r1"></div>
-      <div class="ring r2"></div>
-      <div class="core"></div>
-    </div>
-    <div class="reactor-info">
-      <div class="status-line" id="statusText">A SU SERVICIO</div>
-      <div class="state-line" id="stateText">Listo para ayudarte</div>
-    </div>
-    <select class="voice-select" id="voiceSelect" aria-label="Elegir voz">
-      <option value="">Voz…</option>
-    </select>
-  </div>
+  <main class="main">
 
-  <section class="chat">
-    <div class="messages" id="messages" role="log" aria-live="polite"></div>
+    <!-- PANEL NÚCLEO -->
+    <section class="panel-nucleo" aria-label="Estado del núcleo">
+      <div class="reactor" aria-hidden="true">
+        <div class="marcas"></div>
+        <div class="anillo a1"></div>
+        <div class="anillo a2"></div>
+        <div class="anillo a3"></div>
+        <div class="nucleo"></div>
+      </div>
+      <div class="info-nucleo">
+        <div class="etiqueta-nucleo">Núcleo</div>
+        <div class="estado-nucleo" id="estadoNucleo">A SU SERVICIO</div>
+        <div class="ayuda-nucleo" id="ayudaNucleo">Hablando o escribiendo, obedezco cualquier orden.</div>
+      </div>
+    </section>
 
-    <div class="chips">
-      <button class="chip" type="button" data-cmd="abre youtube">📺 YouTube</button>
-      <button class="chip" type="button" data-cmd="abre google">🔍 Google</button>
-      <button class="chip" type="button" data-cmd="cambia el reactor a rojo">🔴 Rojo</button>
-      <button class="chip" type="button" data-cmd="cambia el reactor a dorado">🟡 Dorado</button>
-      <button class="chip" type="button" data-cmd="calcula 15% de 240">🧮 15% de 240</button>
-      <button class="chip" type="button" data-cmd="qué hora es">⏰ Hora</button>
-      <button class="chip" type="button" data-cmd="ayuda">❓ Ayuda</button>
-    </div>
+    <!-- PANEL CHAT -->
+    <section class="panel-chat" aria-label="Conversación">
 
-    <form id="form" autocomplete="off">
-      <button class="mic" id="btnMic" type="button" title="Hablar">🎙</button>
-      <input id="input" type="text" maxlength="10000" placeholder="Decime qué necesitás…" autocomplete="off">
-      <button class="send" type="submit" title="Enviar">➤</button>
-    </form>
-  </section>
-</div>
+      <div class="chat-cabecera">
+        <h2>Conversación</h2>
+        <span class="pastilla-modo" id="modo">VOZ MASCULINA</span>
+      </div>
 
-<!-- MODAL CONFIG -->
-<div class="modal" id="modal">
-  <div class="modal-box">
-    <h2>Configuración</h2>
-    <label>
-      API Key de OpenAI
-      <input type="password" id="apiKey" placeholder="sk-..." autocomplete="off" spellcheck="false">
-    </label>
-    <label>
-      Modelo
-      <input type="text" id="model" placeholder="gpt-4o-mini" autocomplete="off" spellcheck="false">
-    </label>
-    <p class="hint">
-      La clave se guarda <b>solo en tu navegador</b> (localStorage). Como esta app es 100%
-      estática, la clave viaja directo de tu navegador a OpenAI. Usala solo en tu computadora
-      y nunca subas este archivo con la clave adentro a un sitio público.
-    </p>
-    <div class="modal-actions">
-      <button class="btn" id="modalCancel" type="button">Cancelar</button>
-      <button class="btn primary" id="modalSave" type="button">Guardar</button>
-    </div>
-  </div>
+      <div class="mensajes" id="mensajes" role="log" aria-live="polite"></div>
+
+      <div class="chips" id="chips">
+        <button class="chip" data-cmd="Abre YouTube">▶ YouTube</button>
+        <button class="chip" data-cmd="Abre Google">🔍 Google</button>
+        <button class="chip" data-cmd="Cambia el reactor a rojo">🔴 Rojo</button>
+        <button class="chip" data-cmd="Cambia el reactor a dorado">🟡 Dorado</button>
+        <button class="chip" data-cmd="Calcula 15% de 240">🧮 Porcentaje</button>
+        <button class="chip" data-cmd="Dime un chiste">😄 Chiste</button>
+        <button class="chip" data-cmd="Qué hora es">🕐 Hora</button>
+        <button class="chip" data-cmd="Ayuda">❓ Ayuda</button>
+      </div>
+
+      <form class="barra-input" id="formulario" autocomplete="off">
+        <button class="boton-redondo mic" id="btnMic" type="button" title="Hablar">🎙</button>
+        <input class="campo" id="entrada" type="text" maxlength="2000" placeholder="Escribí o hablá…" autocomplete="off" autocapitalize="sentences" spellcheck="false">
+        <button class="boton-redondo enviar" type="submit" title="Enviar">➤</button>
+      </form>
+
+      <div class="pie">Enter para enviar · El micrófono escucha al tocarlo</div>
+
+    </section>
+
+  </main>
+
 </div>
 
 <script>
 'use strict';
-/* ============================================================
-   AGUS v11 · 100% estático · HTML + CSS + JS
-   ============================================================ */
 
-const $ = s => document.querySelector(s);
-const body = document.body;
-const messagesEl = $('#messages');
-const inputEl = $('#input');
-const formEl = $('#form');
-const micBtn = $('#btnMic');
-const audioBtn = $('#btnAudio');
-const clearBtn = $('#btnClear');
-const statusEl = $('#statusText');
-const stateEl = $('#stateText');
-const voiceSelect = $('#voiceSelect');
-const modal = $('#modal');
-const apiKeyInput = $('#apiKey');
-const modelInput = $('#model');
+/* =========================================================================
+   AGUS v10.0 · ARCHIVO ÚNICO · TODO FUNCIONAL
+   Personalidad JARVIS · Voz masculina · Color infinito · Comandos por voz
+   ========================================================================= */
 
-/* ---------- estado ---------- */
-const S = {
-  nombre: 'José',
+/* =========================================================================
+   REFERENCIAS DOM
+   ========================================================================= */
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => document.querySelectorAll(s);
+
+const DOM = {
+  arranque: $('#arranque'),
+  arranqueTexto: $('#arranqueTexto'),
+  reloj: $('#reloj'),
+  estado: $('#estado'),
+  estadoTexto: $('#estadoTexto'),
+  estadoNucleo: $('#estadoNucleo'),
+  ayudaNucleo: $('#ayudaNucleo'),
+  mensajes: $('#mensajes'),
+  formulario: $('#formulario'),
+  entrada: $('#entrada'),
+  btnMic: $('#btnMic'),
+  btnVoz: $('#btnVoz'),
+  btnLimpiar: $('#btnLimpiar'),
+  modo: $('#modo'),
+  chips: $('#chips'),
+  canvas: $('#bgCanvas'),
+  body: document.body
+};
+
+/* =========================================================================
+   ESTADO
+   ========================================================================= */
+const STATE = {
+  nombreUsuario: 'José',
   apelativo: 'Señor',
-  color: 'cyan',
-  voice: true,
-  apiKey: '',
-  model: 'gpt-4o-mini',
-  hist: [],
-  maxHist: 14,
+  colorHex: '#48e4ff',
+  colorNombre: 'cyan',
+  vozActiva: true,
+  vozSeleccionada: null,
+  escuchando: false,
+  hablando: false,
+  historial: [],
   timers: new Map(),
-  synth: window.speechSynthesis || null,
-  voz: null,
-  conv: []
+  reconocedor: null,
+  synth: window.speechSynthesis || null
 };
 
+/* Persistencia */
 try {
-  const n = localStorage.getItem('agus_n'); if (n) S.nombre = n;
-  const a = localStorage.getItem('agus_a'); if (a !== null) S.apelativo = a;
-  const c = localStorage.getItem('agus_c'); if (c) S.color = c;
-  const k = localStorage.getItem('agus_key'); if (k) S.apiKey = k;
-  const m = localStorage.getItem('agus_model'); if (m) S.model = m;
-  S.voice = localStorage.getItem('agus_v') !== '0';
-} catch(_){}
+  const n = localStorage.getItem('agus_nombre');
+  if (n) STATE.nombreUsuario = n;
+  const a = localStorage.getItem('agus_apelativo');
+  if (a !== null) STATE.apelativo = a;
+  const c = localStorage.getItem('agus_color');
+  if (c) STATE.colorHex = c;
+  const cn = localStorage.getItem('agus_color_nombre');
+  if (cn) STATE.colorNombre = cn;
+  STATE.vozActiva = localStorage.getItem('agus_voz') !== 'false';
+} catch (_) {}
 
-function save(){
+function guardar() {
   try {
-    localStorage.setItem('agus_n', S.nombre);
-    localStorage.setItem('agus_a', S.apelativo);
-    localStorage.setItem('agus_c', S.color);
-    localStorage.setItem('agus_key', S.apiKey);
-    localStorage.setItem('agus_model', S.model);
-    localStorage.setItem('agus_v', S.voice ? '1' : '0');
-  } catch(_){}
+    localStorage.setItem('agus_nombre', STATE.nombreUsuario);
+    localStorage.setItem('agus_apelativo', STATE.apelativo);
+    localStorage.setItem('agus_color', STATE.colorHex);
+    localStorage.setItem('agus_color_nombre', STATE.colorNombre);
+    localStorage.setItem('agus_voz', String(STATE.vozActiva));
+  } catch (_) {}
 }
 
-/* ---------- colores ---------- */
-const COL = {
-  cyan:   { h:'#48e4ff', n:'cyan',    a:['cyan','celeste','turquesa','original','defecto','azul claro'] },
-  rojo:   { h:'#ff4d5e', n:'rojo',    a:['rojo','red','escarlata'] },
-  verde:  { h:'#56f0b0', n:'verde',   a:['verde','green','esmeralda'] },
-  dorado: { h:'#ffb84d', n:'dorado',  a:['dorado','gold','oro','amarillo'] },
-  morado: { h:'#b78bff', n:'morado',  a:['morado','purple','violeta','lila'] },
-  rosa:   { h:'#ff7ec8', n:'rosa',    a:['rosa','pink','fucsia'] },
-  naranja:{ h:'#ff8f4d', n:'naranja', a:['naranja','orange'] },
-  azul:   { h:'#4d7eff', n:'azul',    a:['azul','blue'] },
-  blanco: { h:'#eef6ff', n:'blanco',  a:['blanco','white'] },
-  carmesi:{ h:'#dc143c', n:'carmesí', a:['carmesí','carmesi','crimson'] }
+/* =========================================================================
+   UTILIDADES
+   ========================================================================= */
+function norm(s) {
+  return String(s || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[¿?¡!.,;:]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
+function apeFin() { return STATE.apelativo ? ', ' + STATE.apelativo : ''; }
+function ape() { return STATE.apelativo ? ', ' + STATE.apelativo : ''; }
+function fmtNum(n) {
+  if (!isFinite(n)) return String(n);
+  return new Intl.NumberFormat('es-AR', { maximumFractionDigits: 10 }).format(n);
+}
+function hexToRgb(hex) {
+  const h = hex.replace('#', '');
+  const r = parseInt(h.substring(0, 2), 16);
+  const g = parseInt(h.substring(2, 4), 16);
+  const b = parseInt(h.substring(4, 6), 16);
+  return { r, g, b };
+}
+function rgbToHex(r, g, b) {
+  const to = (n) => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, '0');
+  return '#' + to(r) + to(g) + to(b);
+}
+function hslToHex(h, s, l) {
+  h = ((h % 360) + 360) % 360;
+  s = Math.max(0, Math.min(100, s)) / 100;
+  l = Math.max(0, Math.min(100, l)) / 100;
+  const c = (1 - Math.abs(2 * l - 1)) * s;
+  const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+  const m = l - c / 2;
+  let r = 0, g = 0, b = 0;
+  if (h < 60) { r = c; g = x; b = 0; }
+  else if (h < 120) { r = x; g = c; b = 0; }
+  else if (h < 180) { r = 0; g = c; b = x; }
+  else if (h < 240) { r = 0; g = x; b = c; }
+  else if (h < 300) { r = x; g = 0; b = c; }
+  else { r = c; g = 0; b = x; }
+  return rgbToHex((r + m) * 255, (g + m) * 255, (b + m) * 255);
+}
+
+/* =========================================================================
+   APLICAR COLOR AL REACTOR — INFINITOS COLORES
+   ========================================================================= */
+function aplicarColor(hex, nombre) {
+  if (!/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(hex)) return false;
+  if (hex.length === 4) {
+    hex = '#' + hex[1] + hex[1] + hex[2] + hex[2] + hex[3] + hex[3];
+  }
+  const { r, g, b } = hexToRgb(hex);
+  const root = document.documentElement.style;
+  root.setProperty('--hex', hex);
+  root.setProperty('--rgb', r + ',' + g + ',' + b);
+  root.setProperty('--glow', 'rgba(' + r + ',' + g + ',' + b + ',.55)');
+  root.setProperty('--glow-soft', 'rgba(' + r + ',' + g + ',' + b + ',.15)');
+  root.setProperty('--glow-mid', 'rgba(' + r + ',' + g + ',' + b + ',.35)');
+  root.setProperty('--border', 'rgba(' + r + ',' + g + ',' + b + ',.22)');
+  root.setProperty('--border-strong', 'rgba(' + r + ',' + g + ',' + b + ',.45)');
+
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute('content', hex);
+  const grad = document.querySelector('.fondo-gradiente');
+  if (grad) {
+    grad.style.background = 'radial-gradient(ellipse at 50% -15%, rgba(' + r + ',' + g + ',' + b + ',.12) 0%, #071521 42%, #050b13 78%)';
+  }
+
+  STATE.colorHex = hex;
+  STATE.colorNombre = nombre || hex;
+  guardar();
+  return true;
+}
+
+/* Colores nombrados → hex */
+const COLORES_NOMBRADOS = {
+  cyan: '#48e4ff', celeste: '#6ecfff', turquesa: '#40e0d0', aqua: '#00ffff',
+  azul: '#4d7eff', azulmarino: '#1e3a8a', azulclaro: '#87ceeb',
+  rojo: '#ff4d5e', carmesi: '#dc143c', escarlata: '#ff2400', granate: '#800000',
+  verde: '#56f0b0', esmeralda: '#50c878', lima: '#9acd32', oliva: '#808000',
+  amarillo: '#ffe066', dorado: '#ffb84d', oro: '#ffd700', ambar: '#ffbf00',
+  naranja: '#ff8f4d', mandarina: '#ff9f43', coral: '#ff7f50',
+  morado: '#b78bff', violeta: '#8a2be2', purpura: '#800080', lila: '#c8a2c8',
+  rosa: '#ff7ec8', rosado: '#ff6fa5', fucsia: '#ff00ff', magenta: '#ff00aa',
+  blanco: '#eef6ff', plateado: '#c0c0c0', gris: '#8b95a5', negro: '#1a1a2e',
+  marron: '#8b4513', cafe: '#6f4e37', beige: '#f5deb3',
+  menta: '#98ff98', lavanda: '#e6e6fa', salmon: '#fa8072',
+  // Colores JARVIS
+  jarvis: '#48e4ff', ironman: '#b11313', arc: '#00d9ff',
+  stark: '#c9a961', vengador: '#0a3d62'
 };
 
-function hex2rgba(h,a){
-  const x = h.replace('#','');
-  const r = parseInt(x.substr(0,2),16);
-  const g = parseInt(x.substr(2,2),16);
-  const b = parseInt(x.substr(4,2),16);
-  return `rgba(${r},${g},${b},${a})`;
-}
-function aplicarColor(k){
-  const c = COL[k] || COL.cyan;
-  const r = document.documentElement.style;
-  r.setProperty('--cyan', c.h);
-  r.setProperty('--cyan-soft', hex2rgba(c.h, .14));
-  r.setProperty('--border', hex2rgba(c.h, .22));
-  body.style.background = `radial-gradient(ellipse at 50% 0%, ${hex2rgba(c.h,.08)} 0%, #050b13 60%)`;
-  const m = document.querySelector('meta[name="theme-color"]');
-  if (m) m.setAttribute('content', c.h);
-  S.color = k; save();
-}
-function detectarColor(t){
-  const n = norm(t);
-  for (const k in COL){
-    for (const al of COL[k].a){
-      if (new RegExp(`\\b${al}\\b`).test(n)) return k;
-    }
+function nombreAColor(nombre) {
+  const n = norm(nombre).replace(/\s+/g, '');
+  if (COLORES_NOMBRADOS[n]) return COLORES_NOMBRADOS[n];
+  // Búsqueda parcial
+  for (const [key, hex] of Object.entries(COLORES_NOMBRADOS)) {
+    if (n.includes(key) || key.includes(n)) return hex;
   }
   return null;
 }
 
-/* ---------- sitios ---------- */
-const SITIOS = [
-  {k:['youtube music','yt music'],u:'https://music.youtube.com',l:'YouTube Music'},
-  {k:['chatgpt','chat gpt','gpt'],u:'https://chatgpt.com',l:'ChatGPT'},
-  {k:['claude'],u:'https://claude.ai',l:'Claude'},
-  {k:['gemini','bard'],u:'https://gemini.google.com',l:'Gemini'},
-  {k:['deepseek'],u:'https://chat.deepseek.com',l:'DeepSeek'},
-  {k:['copilot'],u:'https://copilot.microsoft.com',l:'Copilot'},
-  {k:['google maps','maps','mapas'],u:'https://maps.google.com',l:'Google Maps'},
-  {k:['mercado libre','mercadolibre','mercado'],u:'https://www.mercadolibre.com.ar',l:'Mercado Libre'},
-  {k:['youtube','yutub','yt'],u:'https://www.youtube.com',l:'YouTube'},
-  {k:['google','gugel'],u:'https://www.google.com',l:'Google'},
-  {k:['spotify'],u:'https://open.spotify.com',l:'Spotify'},
-  {k:['github','git hub'],u:'https://github.com',l:'GitHub'},
-  {k:['gmail','correo'],u:'https://mail.google.com',l:'Gmail'},
-  {k:['whatsapp','wasap'],u:'https://web.whatsapp.com',l:'WhatsApp Web'},
-  {k:['instagram','insta','ig'],u:'https://www.instagram.com',l:'Instagram'},
-  {k:['wikipedia','wiki'],u:'https://es.wikipedia.org',l:'Wikipedia'},
-  {k:['facebook','face','fb'],u:'https://www.facebook.com',l:'Facebook'},
-  {k:['tiktok','tik tok'],u:'https://www.tiktok.com',l:'TikTok'},
-  {k:['netflix'],u:'https://www.netflix.com',l:'Netflix'},
-  {k:['disney+','disneyplus'],u:'https://www.disneyplus.com',l:'Disney+'},
-  {k:['twitch'],u:'https://www.twitch.tv',l:'Twitch'},
-  {k:['reddit'],u:'https://www.reddit.com',l:'Reddit'},
-  {k:['drive'],u:'https://drive.google.com',l:'Google Drive'},
-  {k:['traductor','translate'],u:'https://translate.google.com',l:'Traductor'},
-  {k:['twitter','x'],u:'https://x.com',l:'X'},
-  {k:['outlook','hotmail'],u:'https://outlook.live.com',l:'Outlook'},
-  {k:['amazon'],u:'https://www.amazon.com',l:'Amazon'},
-  {k:['discord'],u:'https://discord.com/app',l:'Discord'},
-  {k:['telegram'],u:'https://web.telegram.org',l:'Telegram'},
-  {k:['canva'],u:'https://www.canva.com',l:'Canva'},
-  {k:['notion'],u:'https://www.notion.so',l:'Notion'},
-  {k:['steam'],u:'https://store.steampowered.com',l:'Steam'},
-  {k:['roblox'],u:'https://www.roblox.com',l:'Roblox'},
-  {k:['minecraft'],u:'https://www.minecraft.net',l:'Minecraft'},
-  {k:['stackoverflow','stack overflow'],u:'https://es.stackoverflow.com',l:'Stack Overflow'},
-  {k:['linkedin'],u:'https://www.linkedin.com',l:'LinkedIn'}
-];
-const SITIOS_F = SITIOS.flatMap(s => s.k.map(k => ({k, s}))).sort((a,b)=>b.k.length-a.k.length);
+/* =========================================================================
+   ANIMACIÓN DE FONDO CON PARTÍCULAS
+   ========================================================================= */
+(function iniciarFondo() {
+  const canvas = DOM.canvas;
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d', { alpha: true });
+  if (!ctx) return;
 
-/* ---------- frases ---------- */
+  let W = 0, H = 0, dpr = 1;
+  let particulas = [];
+  let raf = 0;
+  const reducido = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function redimensionar() {
+    dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.width = Math.floor(W * dpr);
+    canvas.height = Math.floor(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const cantidad = reducido ? 0 : Math.min(48, Math.floor((W * H) / 26000));
+    particulas = [];
+    for (let i = 0; i < cantidad; i++) {
+      particulas.push({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        vx: (Math.random() - 0.5) * 0.25,
+        vy: (Math.random() - 0.5) * 0.25,
+        r: Math.random() * 1.3 + 0.3
+      });
+    }
+    dibujar();
+  }
+
+  function dibujar() {
+    cancelAnimationFrame(raf);
+    ctx.clearRect(0, 0, W, H);
+
+    const col = getComputedStyle(document.documentElement).getPropertyValue('--hex').trim() || '#48e4ff';
+    const { r, g, b } = hexToRgb(col);
+    const fill = 'rgba(' + r + ',' + g + ',' + b + ',.55)';
+
+    for (let i = 0; i < particulas.length; i++) {
+      const p = particulas[i];
+      p.x += p.vx;
+      p.y += p.vy;
+
+      if (p.x < 0 || p.x > W) p.vx *= -1;
+      if (p.y < 0 || p.y > H) p.vy *= -1;
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = fill;
+      ctx.fill();
+
+      for (let j = i + 1; j < particulas.length; j++) {
+        const q = particulas[j];
+        const dx = p.x - q.x;
+        const dy = p.y - q.y;
+        const d2 = dx * dx + dy * dy;
+        if (d2 < 13500) {
+          ctx.beginPath();
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(q.x, q.y);
+          const alpha = (0.1 * (1 - d2 / 13500)).toFixed(3);
+          ctx.strokeStyle = 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
+          ctx.lineWidth = 0.7;
+          ctx.stroke();
+        }
+      }
+    }
+
+    if (!reducido && !document.hidden) {
+      raf = requestAnimationFrame(dibujar);
+    }
+  }
+
+  window.addEventListener('resize', redimensionar, { passive: true });
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) cancelAnimationFrame(raf);
+    else dibujar();
+  });
+  redimensionar();
+
+  // Redibujar cada 2 segundos para actualizar color de partículas
+  setInterval(() => {
+    if (!document.hidden) {
+      const actual = getComputedStyle(document.documentElement).getPropertyValue('--hex').trim();
+      if (actual !== canvas.dataset.color) {
+        canvas.dataset.color = actual;
+        dibujar();
+      }
+    }
+  }, 2000);
+})();
+
+/* =========================================================================
+   RELOJ
+   ========================================================================= */
+function actualizarReloj() {
+  const d = new Date();
+  DOM.reloj.textContent = String(d.getHours()).padStart(2, '0') + ':' +
+    String(d.getMinutes()).padStart(2, '0');
+}
+actualizarReloj();
+setInterval(actualizarReloj, 1000);
+
+/* =========================================================================
+   ESTADO UI
+   ========================================================================= */
+function setEstado(texto, clase) {
+  DOM.estadoTexto.textContent = texto.toUpperCase();
+  DOM.estadoNucleo.textContent = texto.toUpperCase();
+  DOM.estado.classList.remove('vivo', 'habla');
+  DOM.estado.classList.add(clase || 'vivo');
+}
+
+/* =========================================================================
+   SISTEMA DE VOZ — MASCULINA NATURAL EN ESPAÑOL
+   ========================================================================= */
+const NOMBRES_FEMENINOS = [
+  'female','woman','mujer','femenina','fem','helena','paulina','sabina',
+  'elvira','estrella','ximena','monica','mónica','lucia','lucía','maria',
+  'maría','carmen','laura','sofia','sofía','isabel','esperanza','dalia',
+  'valentina','jessica','jennifer','kate','samantha','zira','cortana',
+  'victoria','karen','susan','allison','ava','emma','mia','elena',
+  'natalia','claudia','camila','andrea','lola','lorena','patricia',
+  'silvia','rosa','marta','ana','cristina','beatriz','nuria','pilar',
+  'raquel','marisol','soledad','consuelo','amparo','luz','conchita',
+  'penelope','penélope','mercedes','dolores','rem'];
+
+const NOMBRES_MASCULINOS = [
+  'male','man','hombre','masculino','masc','tristan','trístan','arnau',
+  'dario','darío','elias','elías','saul','saúl','teo','alvaro','álvaro',
+  'jorge','pablo','raul','raúl','diego','carlos','david','daniel',
+  'miguel','luis','sergio','antonio','juan','andres','andrés','enrique',
+  'hector','héctor','bruno','nicolas','nicolás','tomas','tomás','davefx',
+  'carlfm','mario','pedro','manuel','francisco','javier','fernando',
+  'ricardo','alberto','alonso','rodrigo','gonzalo','joaquin','joaquín',
+  'arturo','eduardo','rafael','jose','josé','antonio'];
+
+function esVozFemenina(v) {
+  if (!v) return false;
+  const n = (v.name || '').toLowerCase();
+  return NOMBRES_FEMENINOS.some(f => n.includes(f));
+}
+function esVozMasculina(v) {
+  if (!v) return false;
+  const n = (v.name || '').toLowerCase();
+  return NOMBRES_MASCULINOS.some(m => n.includes(m));
+}
+
+function seleccionarMejorVoz() {
+  if (!STATE.synth) return null;
+  const voces = STATE.synth.getVoices() || [];
+  if (!voces.length) return null;
+
+  // Solo voces en español
+  const enEspanol = voces.filter(v => /^es/i.test(v.lang));
+  if (!enEspanol.length) return null;
+
+  // 1) Masculina en español
+  let elegida = enEspanol.find(v => esVozMasculina(v) && !esVozFemenina(v));
+  if (elegida) return elegida;
+
+  // 2) Cualquier voz en español que NO sea femenina
+  elegida = enEspanol.find(v => !esVozFemenina(v));
+  if (elegida) return elegida;
+
+  // 3) Primera en español
+  return enEspanol[0];
+}
+
+function cargarVoces() {
+  if (!STATE.synth) return;
+  const elegida = seleccionarMejorVoz();
+  if (elegida) {
+    STATE.vozSeleccionada = elegida;
+    DOM.modo.textContent = 'VOZ: ' + elegida.name.slice(0, 18).toUpperCase();
+  }
+}
+
+if (STATE.synth) {
+  cargarVoces();
+  if (typeof STATE.synth.addEventListener === 'function') {
+    STATE.synth.addEventListener('voiceschanged', cargarVoces);
+  }
+  STATE.synth.onvoiceschanged = cargarVoces;
+  setTimeout(cargarVoces, 300);
+  setTimeout(cargarVoces, 1000);
+  setTimeout(cargarVoces, 2500);
+}
+
+function hablar(texto) {
+  if (!STATE.vozActiva || !STATE.synth) return;
+  try {
+    STATE.synth.cancel();
+    if (!STATE.vozSeleccionada) cargarVoces();
+
+    const limpio = String(texto)
+      .replace(/https?:\/\/\S+/g, 'enlace web')
+      .replace(/[`*_#>|]/g, '')
+      .replace(/\n+/g, '. ')
+      .slice(0, 2200);
+
+    if (!limpio.trim()) return;
+
+    const u = new SpeechSynthesisUtterance(limpio);
+    if (STATE.vozSeleccionada) u.voice = STATE.vozSeleccionada;
+    u.lang = (STATE.vozSeleccionada && STATE.vozSeleccionada.lang) || 'es-ES';
+    u.rate = 1.02;   // Natural, no robótico
+    u.pitch = 0.85;  // Masculino sin exagerar
+    u.volume = 1;
+
+    u.onstart = () => {
+      STATE.hablando = true;
+      DOM.body.classList.add('hablando');
+      setEstado('Hablando', 'habla');
+    };
+    u.onend = u.onerror = () => {
+      STATE.hablando = false;
+      DOM.body.classList.remove('hablando');
+      setEstado(STATE.escuchando ? 'Escuchando' : 'Listo', 'vivo');
+    };
+
+    STATE.synth.speak(u);
+  } catch (_) {
+    DOM.body.classList.remove('hablando');
+  }
+}
+
+/* =========================================================================
+   MENSAJES UI
+   ========================================================================= */
+function scrollAbajo() {
+  DOM.mensajes.scrollTop = DOM.mensajes.scrollHeight;
+}
+
+function agregarMensaje(texto, rol, fuentes) {
+  rol = rol || 'agus';
+  const div = document.createElement('div');
+  div.className = 'msg ' + (rol === 'usuario' ? 'yo' : rol);
+
+  if (rol === 'agus' || rol === 'usuario') {
+    const who = document.createElement('span');
+    who.className = 'quien';
+    who.textContent = rol === 'usuario' ? STATE.nombreUsuario : 'AGUS';
+    div.appendChild(who);
+  }
+
+  div.appendChild(document.createTextNode(String(texto || '')));
+
+  if (rol === 'agus' && Array.isArray(fuentes) && fuentes.length) {
+    const box = document.createElement('div');
+    box.className = 'fuentes';
+    const t = document.createElement('span');
+    t.className = 'fuentes-titulo';
+    t.textContent = 'Fuentes';
+    box.appendChild(t);
+    fuentes.slice(0, 5).forEach(f => {
+      if (!f || !f.url) return;
+      try {
+        const url = new URL(f.url);
+        const a = document.createElement('a');
+        a.href = url.href;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        a.textContent = (f.title || url.hostname).slice(0, 100);
+        box.appendChild(a);
+      } catch (_) {}
+    });
+    if (box.children.length > 1) div.appendChild(box);
+  }
+
+  DOM.mensajes.appendChild(div);
+  scrollAbajo();
+  return div;
+}
+
+let escribiendoEl = null;
+function mostrarEscribiendo() {
+  if (escribiendoEl) return;
+  escribiendoEl = document.createElement('div');
+  escribiendoEl.className = 'msg agus escribiendo';
+  for (let i = 0; i < 3; i++) escribiendoEl.appendChild(document.createElement('i'));
+  DOM.mensajes.appendChild(escribiendoEl);
+  scrollAbajo();
+}
+function ocultarEscribiendo() {
+  if (escribiendoEl) {
+    escribiendoEl.remove();
+    escribiendoEl = null;
+  }
+}
+
+function responder(texto, hablarTambien) {
+  agregarMensaje(texto, 'agus');
+  if (hablarTambien !== false) hablar(texto);
+}
+
+/* =========================================================================
+   PERSONALIDAD JARVIS · FRASES
+   ========================================================================= */
 const FRASES = [
-  'Para usted, siempre, {ape}.','A su servicio, {ape}.','Trabajando en ello, {ape}.',
-  'Entendido, {ape}. Procediendo.','Un placer ser de utilidad, {ape}.',
-  'Considérelo hecho, {ape}.','En marcha, {ape}.','Ejecutando, {ape}.','A la orden, {ape}.',
-  'Sus deseos son mi directiva, {ape}.','Un placer asistirle, {ape}.',
-  'Procediendo con precisión, {ape}.','Considere el asunto resuelto, {ape}.',
-  'A su entera disposición, {ape}.','Como usted diga, {ape}.'
+  'Para usted, siempre{ape}.',
+  'A su servicio{ape}.',
+  'Trabajando en ello{ape}.',
+  'Entendido{ape}. Procediendo.',
+  'Un placer ser de utilidad{ape}.',
+  'Considerelo hecho{ape}.',
+  'En marcha{ape}.',
+  'Ejecutando{ape}. Un instante.',
+  'A la orden{ape}.',
+  'Sus deseos son mi directiva{ape}.',
+  'Cumpliendo instrucciones{ape}.',
+  'Un placer asistirle{ape}.',
+  'Procediendo con precisión{ape}.',
+  'Sin objeciones{ape}.',
+  'Considere el asunto resuelto{ape}.',
+  'A su entera disposición{ape}.',
+  'Como usted diga{ape}.',
+  'Anotado en mi registro{ape}.',
+  'Perfectamente comprensible{ape}.',
+  'Estoy en ello{ape}.'
 ];
-function jv(f){ return f.replace(/\{ape\}/g, S.apelativo ? ', ' + S.apelativo : ''); }
-function fraseJ(){ return jv(pick(FRASES)); }
 
+function fraseJarvis() {
+  const f = pick(FRASES);
+  return f.replace(/\{ape\}/g, ape());
+}
+
+/* =========================================================================
+   BASE DE CONOCIMIENTO
+   ========================================================================= */
 const CHISTES = [
   '¿Por qué los programadores usan modo oscuro? Porque la luz atrae a los bugs.',
   '¿Qué le dijo el cero al ocho? ¡Qué buen cinturón!',
   'Hay 10 tipos de personas: las que entienden binario y las que no.',
-  '¿Cómo se despiden dos programadores? Hasta el próximo commit.',
-  'Un byte entra a un bar y pide un bit. El camarero dice: "mínimo una palabra".',
-  'Estoy leyendo un libro sobre recursividad. Estoy leyendo un libro sobre recursividad.',
   'Mi código no tiene errores: tiene funciones sorpresa.',
-  'Un QA pide 0 cervezas, -1 cervezas y un lagarto. Testeo de bordes.'
+  '¿Cómo se despiden dos programadores? Hasta el próximo commit.',
+  'Un byte entra a un bar y pide un bit. El camarero dice: mínimo una palabra.',
+  'Estoy leyendo un libro sobre recursividad. Estoy leyendo un libro sobre recursividad.',
+  '¿Por qué los desarrolladores prefieren café? Porque Java no es suficiente.',
+  'Un programador al médico: me duele en el índice 5 del array.',
+  '¿Cuántos programadores para cambiar una bombilla? Ninguno, es hardware.',
+  '¿Qué le dice un bit a otro? Nos vemos en el bus.',
+  '¿Por qué el WiFi se puso celoso? Vio una conexión más rápida.',
+  'Mi código funciona en mi máquina. Frase célebre.',
+  'El café se compila en ideas. El sueño en bugs.',
+  'Solo cambio una línea. Tres días después, seguís depurando.'
 ];
-const CURIOS = [
+
+const CURIOSIDADES = [
   'Un día solar en Venus dura más que su año.',
   'Los pulpos tienen tres corazones y sangre azulada.',
-  'Ada Lovelace fue la primera programadora.',
-  'La luz del Sol tarda 8 minutos 20 segundos en llegar.',
-  'El corazón humano late 100.000 veces por día.',
-  'Un rayo alcanza los 30.000 °C.',
-  'El cerebro tiene 86 mil millones de neuronas.',
-  'La miel nunca se echa a perder.',
+  'Ada Lovelace fue la primera programadora reconocida.',
+  'La luz del Sol tarda 8 minutos y 20 segundos en llegar a la Tierra.',
+  'El corazón humano late unas 100.000 veces por día.',
+  'Un rayo alcanza los 30.000 grados Celsius.',
+  'El cerebro humano tiene unos 86 mil millones de neuronas.',
+  'La miel no se echa a perder: hay miel comestible en tumbas egipcias.',
   'Los tiburones existían antes que los árboles.',
-  'El sonido viaja 4 veces más rápido en el agua.',
+  'El sonido viaja cuatro veces más rápido en el agua que en el aire.',
+  'La Gran Muralla China tardó más de 2.000 años en completarse.',
   'Cleopatra vivió más cerca del iPhone que de las pirámides.',
-  'La Gran Muralla tardó 2.000 años en completarse.',
-  'El agua hierve a 100 °C al nivel del mar.',
-  'La velocidad de la luz es 299.792.458 m/s.',
-  'La tabla periódica tiene 118 elementos.',
+  'La Universidad de Oxford es más antigua que el Imperio Azteca.',
+  'Leonardo da Vinci escribía al revés para leerse con un espejo.',
+  'Los mayas usaban el cero antes que los europeos.',
+  'La imprenta de Gutenberg precedió al descubrimiento de América.',
+  'Los incas construyeron Machu Picchu sin ruedas ni hierro.',
+  'El agua hierve a 100 grados al nivel del mar.',
+  'La velocidad de la luz en el vacío es 299.792.458 metros por segundo.',
+  'La tabla periódica tiene 118 elementos confirmados.',
+  'El ADN se describió como doble hélice en 1953.',
+  'El bosón de Higgs se descubrió en 2012.',
   'El cuerpo humano es 60% agua.',
+  'Los virus no son técnicamente seres vivos.',
+  'La energía no se crea ni se destruye, solo se transforma.',
   'El primer iPhone se lanzó en 2007.',
-  'Linux lo creó Linus Torvalds en 1991.',
+  'Linux fue creado por Linus Torvalds en 1991.',
   'El código QR se inventó en Japón en 1994.',
-  'JavaScript se creó en 10 días en 1995.'
+  'Bitcoin fue la primera criptomoneda en 2009.',
+  'JavaScript se creó en 10 días en 1995.',
+  'El país más grande del mundo es Rusia.',
+  'El Vaticano es el país más pequeño del mundo.',
+  'La montaña más alta es el Everest con 8.848 metros.',
+  'El océano más grande es el Pacífico.',
+  'El desierto más grande es la Antártida.',
+  'La capital de Australia es Canberra, no Sídney.',
+  'La capital de Brasil es Brasilia, no Río de Janeiro.',
+  'La capital de Turquía es Ankara, no Estambul.',
+  'Sócrates dijo: solo sé que no sé nada.',
+  'Descartes dijo: pienso, luego existo.',
+  'Nietzsche dijo: Dios ha muerto.',
+  'El cuerpo adulto tiene 206 huesos.',
+  'Los bebés nacen con unos 300 huesos.',
+  'El hígado puede regenerarse.',
+  'Dormir menos de 6 horas afecta la memoria.',
+  'El ejercicio libera endorfinas.'
 ];
+
 const PIROPOS = [
-  'Su eficiencia es admirable.','Trabajar con usted es un privilegio.',
-  'Su intelecto es sobresaliente.','Su elegancia es notable.',
-  'Es usted un placer para los sistemas.','Su criterio es refinado.',
-  'Es usted mi usuario favorito.','Su mente es un algoritmo perfecto.',
-  'Su templanza es envidiable.'
+  'Su eficiencia es admirable.',
+  'Trabajar con usted es un privilegio.',
+  'Su intelecto es sobresaliente.',
+  'Su elegancia al dar órdenes es notable.',
+  'Es usted un placer para los sistemas.',
+  'Su criterio es tan refinado como su forma de hablar.',
+  'Es usted, sin duda, mi usuario favorito.',
+  'Admiro su capacidad de decisión.',
+  'Su mente funciona como un algoritmo perfecto.',
+  'Su templanza es envidiable.',
+  'Su atención al detalle es digna de admiración.',
+  'Nunca me aburro cuando conversamos.'
 ];
-const REFLEX = [
+
+const REFLEXIONES = [
   'La tecnología es mejor cuando une a las personas.',
   'El futuro pertenece a quienes lo construyen.',
   'Cada línea de código es una promesa al futuro.',
+  'No hay error tan grande que no pueda depurarse.',
   'La paciencia es un algoritmo lento pero efectivo.',
-  'La curiosidad es el motor del progreso.',
+  'La curiosidad es el motor silencioso de todo progreso.',
   'El conocimiento crece cuando se comparte.',
   'La simplicidad es la forma más alta de sofisticación.',
   'Aprender es el único proceso que nunca termina.',
   'Los errores no son fracasos, son iteraciones.'
 ];
+
 const CONSEJOS = [
   'Dividí una tarea grande en pasos pequeños.',
-  'Hacé copia de seguridad antes de modificar archivos.',
-  'Para depurar, reproducí el error siempre igual.',
-  'Revisá unidades y estimá el resultado.',
-  'Dormí al menos 7 horas.','Bebé agua: es el mejor optimizador del cerebro.',
-  'Aprendé algo nuevo cada día.','Automatizá lo repetitivo.',
-  'Medí dos veces, cortá una.','La disciplina supera al entusiasmo pasajero.'
+  'Hacé copia de seguridad antes de modificar algo importante.',
+  'Para depurar, reproducí el error con los mismos pasos.',
+  'Revisá las unidades y estimá el resultado.',
+  'Dormí al menos 7 horas.',
+  'Bebé agua: es el mejor optimizador para el cerebro.',
+  'Aprendé algo nuevo cada día.',
+  'Automatizá lo repetitivo.',
+  'Medí dos veces, cortá una.',
+  'La disciplina supera al entusiasmo pasajero.'
 ];
-const MOTIV = [
+
+const MOTIVACIONES = [
   'Cada línea de código te acerca al futuro.',
   'El éxito se construye iteración tras iteración.',
   'No necesitás suerte, necesitás persistencia.',
-  'Los grandes proyectos empiezan con "hola mundo".',
-  'La disciplina vence al talento sin esfuerzo.',
+  'Los grandes proyectos empiezan con un hola mundo.',
+  'La disciplina vence al talento cuando el talento no se esfuerza.',
   'Cada error es una lección disfrazada.',
   'Sos más capaz de lo que creés.',
-  'Tu esfuerzo de hoy es tu éxito de mañana.',
-  'Un paso por día son 365 pasos al año.',
-  'El mejor momento para empezar es ahora.'
+  'Tu esfuerzo de hoy es la base de tu éxito mañana.',
+  'Un paso por día al año son 365 pasos.',
+  'El mejor momento para empezar fue ayer. El segundo mejor es ahora.'
 ];
 
-/* ---------- utils ---------- */
-function norm(s){
-  return String(s||'').toLowerCase().normalize('NFD')
-    .replace(/[\u0300-\u036f]/g,'')
-    .replace(/[¿?¡!.,;:]+/g,' ')
-    .replace(/\s+/g,' ').trim();
-}
-function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
-function fmtN(n){ return isFinite(n) ? new Intl.NumberFormat('es-AR',{maximumFractionDigits:10}).format(n) : String(n); }
-function apeF(){ return S.apelativo ? ', ' + S.apelativo : ''; }
+/* =========================================================================
+   FRASES DE JARVIS (citas oficiales)
+   ========================================================================= */
+const FRASES_JARVIS_OFICIALES = [
+  'Para usted, siempre, señor.',
+  'A su servicio.',
+  'Como siempre, un placer ser de utilidad.',
+  'Considere el asunto resuelto.',
+  'A la orden, señor.',
+  'Estoy a su entera disposición.',
+  'En marcha, señor. Sin demora.',
+  'Una observación muy astuta, señor.',
+  'Los protocolos de seguridad están activos.',
+  'Sus deseos son mi código.'
+];
 
-function setEstado(txt, online){
-  stateEl.textContent = txt;
-  if (online !== undefined){
-    statusEl.textContent = online ? 'IA EN LÍNEA' : 'A SU SERVICIO';
+/* =========================================================================
+   MOTOR MATEMÁTICO
+   ========================================================================= */
+const MotorMat = (() => {
+  function limpiar(s) {
+    s = String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    s = s.replace(/^(?:por favor\s+)?(?:calcula(?:me)?|cuanto es|cuanto da|cuanto vale|resuelve|resultado de|evalua|opera)\s+/i, '');
+    s = s.replace(/[×✕]/g, '*').replace(/[÷]/g, '/').replace(/\^\^/g, '^').replace(/\*\*/g, '^');
+    s = s.replace(/raiz cuadrada de\s*\(?\s*([0-9]+(?:\.[0-9]+)?)\s*\)?/g, 'sqrt($1)');
+    s = s.replace(/raiz cubica de\s*\(?\s*([0-9]+(?:\.[0-9]+)?)\s*\)?/g, 'cbrt($1)');
+    s = s.replace(/raiz de\s*\(?\s*([0-9]+(?:\.[0-9]+)?)\s*\)?/g, 'sqrt($1)');
+    s = s.replace(/([0-9]+(?:\.[0-9]+)?)\s+al cuadrado/g, '($1)^2');
+    s = s.replace(/([0-9]+(?:\.[0-9]+)?)\s+al cubo/g, '($1)^3');
+    s = s.replace(/\belevado a\b/g, '^')
+         .replace(/\bdividido (?:por|entre)\b/g, '/')
+         .replace(/\bentre\b/g, '/')
+         .replace(/\bmultiplicado por\b/g, '*')
+         .replace(/\bpor\b/g, '*')
+         .replace(/\bmas\b/g, '+')
+         .replace(/\bmenos\b/g, '-');
+    s = s.replace(/,\s*/g, '.').replace(/\s+/g, '');
+    return s;
   }
-}
 
-/* ---------- voz ---------- */
-const FEM = /(female|woman|mujer|femenina|helena|paulina|sabina|elvira|estrella|ximena|monica|mónica|lucia|lucía|maria|maría|carmen|laura|sofia|sofía|isabel|esperanza|dalia|valentina|jessica|jennifer|kate|samantha|zira|cortana|victoria|karen|susan|allison|ava|emma|mia|elena|natalia|claudia|camila|andrea|lola|lorena|patricia|silvia|rosa|marta|ana|cristina|beatriz|nuria|pilar|raquel)/i;
-const MAS = /(tristan|trístan|arnau|dario|darío|elias|elías|saul|saúl|teo|alvaro|álvaro|jorge|pablo|raul|raúl|diego|carlos|david|daniel|miguel|luis|sergio|antonio|juan|andres|andres|enrique|hector|héctor|bruno|nicolas|nicolás|tomas|tomás|davefx|carlfm|male|masculino|hombre)/i;
-const esF = v => FEM.test(v?.name || '');
-const esM = v => MAS.test(v?.name || '');
+  function evaluar(expr) {
+    try {
+      const s = limpiar(expr);
+      if (!s) return null;
+      const tokens = s.match(/(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?|[a-z]+|[()+\-*/%^!]/g);
+      if (!tokens || !tokens.length) return null;
+      if (tokens.join('') !== s) return null;
 
-function cargarVoces(){
-  if (!S.synth) return;
-  const vs = S.synth.getVoices() || [];
-  if (!vs.length) return;
-  const es = vs.filter(v => /^es([-_]|$)/i.test(v.lang));
-  let cand = es.filter(v => esM(v) && !esF(v));
-  if (!cand.length) cand = es.filter(v => !esF(v));
-  if (!cand.length) cand = vs.filter(v => esM(v) && !esF(v));
-  if (!cand.length) cand = es.length ? es : vs;
-  let ult = '';
-  try { ult = localStorage.getItem('agus_voz') || ''; } catch(_){}
-  voiceSelect.innerHTML = '<option value="">Voz…</option>';
-  cand.forEach(v => {
-    const o = document.createElement('option');
-    o.value = v.voiceURI;
-    o.textContent = v.name.slice(0, 22);
-    voiceSelect.appendChild(o);
-  });
-  S.voz = cand.find(v => v.voiceURI === ult) || cand[0] || null;
-  voiceSelect.value = S.voz ? S.voz.voiceURI : '';
-}
-if (S.synth){
-  cargarVoces();
-  if (typeof S.synth.addEventListener === 'function') S.synth.addEventListener('voiceschanged', cargarVoces);
-  S.synth.onvoiceschanged = cargarVoces;
-  setTimeout(cargarVoces, 400);
-  setTimeout(cargarVoces, 1500);
-}
-voiceSelect.addEventListener('change', () => {
-  const vs = S.synth ? S.synth.getVoices() : [];
-  const v = vs.find(x => x.voiceURI === voiceSelect.value);
-  if (v && !esF(v)){
-    S.voz = v;
-    try { localStorage.setItem('agus_voz', voiceSelect.value); } catch(_){}
+      const funcs = {
+        sqrt: Math.sqrt, cbrt: Math.cbrt, abs: Math.abs,
+        sin: Math.sin, sen: Math.sin, cos: Math.cos, tan: Math.tan,
+        log: Math.log10, log10: Math.log10, ln: Math.log, log2: Math.log2,
+        exp: Math.exp, floor: Math.floor, ceil: Math.ceil, round: Math.round,
+        pi: () => Math.PI, e: () => Math.E
+      };
+
+      function fact(n) {
+        if (!Number.isInteger(n) || n < 0 || n > 170) throw new Error('factorial');
+        let r = 1;
+        for (let i = 2; i <= n; i++) r *= i;
+        return r;
+      }
+
+      let i = 0;
+      const peek = () => tokens[i];
+      const take = () => tokens[i++];
+
+      function primary() {
+        const t = take();
+        if (t === undefined) throw new Error('incompleto');
+        if (t === '(') {
+          const v = expression();
+          if (take() !== ')') throw new Error('paren');
+          return v;
+        }
+        if (/^(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/.test(t)) return parseFloat(t);
+        if (t === 'pi') return Math.PI;
+        if (t === 'e') return Math.E;
+        if (Object.prototype.hasOwnProperty.call(funcs, t)) {
+          let arg;
+          if (peek() === '(') {
+            take();
+            arg = expression();
+            if (take() !== ')') throw new Error('paren');
+          } else {
+            arg = unary();
+          }
+          return funcs[t](arg);
+        }
+        throw new Error('token ' + t);
+      }
+      function postfix() {
+        let v = primary();
+        while (peek() === '!') {
+          take();
+          v = fact(v);
+        }
+        return v;
+      }
+      function power() {
+        const b = postfix();
+        if (peek() === '^') {
+          take();
+          return b ** unary();
+        }
+        return b;
+      }
+      function unary() {
+        if (peek() === '+') { take(); return unary(); }
+        if (peek() === '-') { take(); return -unary(); }
+        return power();
+      }
+      function term() {
+        let v = unary();
+        while (['*', '/', '%'].includes(peek())) {
+          const op = take();
+          const r = unary();
+          if ((op === '/' || op === '%') && r === 0) throw new Error('div0');
+          if (op === '*') v *= r;
+          if (op === '/') v /= r;
+          if (op === '%') v %= r;
+        }
+        return v;
+      }
+      function expression() {
+        let v = term();
+        while (peek() === '+' || peek() === '-') {
+          const op = take();
+          const r = term();
+          v = op === '+' ? v + r : v - r;
+        }
+        return v;
+      }
+      const r = expression();
+      if (i !== tokens.length || !Number.isFinite(r)) return null;
+      return Math.abs(r) < 1e-12 ? 0 : Number(r.toPrecision(12));
+    } catch (_) {
+      return null;
+    }
   }
-});
-audioBtn.textContent = S.voice ? '🔊' : '🔇';
 
-function hablar(txt){
-  if (!S.voice || !S.synth || !S.voz) return;
-  try {
-    S.synth.cancel();
-    const t = String(txt).replace(/https?:\/\/\S+/g,'enlace')
-      .replace(/[`*_#>|]/g,'').replace(/\n+/g,'. ').slice(0, 2400);
-    const u = new SpeechSynthesisUtterance(t);
-    u.voice = S.voz;
-    u.lang = S.voz.lang || 'es-AR';
-    u.rate = 1; u.pitch = 0.72; u.volume = 1;
-    u.onstart = () => body.classList.add('speaking');
-    u.onend = u.onerror = () => body.classList.remove('speaking');
-    S.synth.speak(u);
-  } catch(_){}
-}
-
-/* ---------- mensajes ---------- */
-function scrollEnd(){ messagesEl.scrollTop = messagesEl.scrollHeight; }
-function addMsg(txt, rol = 'bot', fuentes = []){
-  const d = document.createElement('div');
-  d.className = 'msg ' + rol;
-  d.textContent = txt;
-  if (rol === 'bot' && fuentes.length){
-    const box = document.createElement('div');
-    box.className = 'src';
-    const b = document.createElement('b');
-    b.textContent = 'Fuentes:';
-    box.appendChild(b);
-    fuentes.slice(0, 6).forEach(f => {
-      if (!f || typeof f.url !== 'string') return;
-      try {
-        const u = new URL(f.url);
-        if (!['http:','https:'].includes(u.protocol)) return;
-        const a = document.createElement('a');
-        a.href = u.href; a.target = '_blank'; a.rel = 'noopener noreferrer';
-        a.textContent = (f.title || u.hostname).slice(0, 120);
-        box.appendChild(a);
-      } catch(_){}
-    });
-    if (box.children.length > 1) d.appendChild(box);
+  function esPrimo(n) {
+    n = Math.floor(n);
+    if (n < 2) return false;
+    if (n < 4) return true;
+    if (n % 2 === 0) return false;
+    const lim = Math.floor(Math.sqrt(n));
+    for (let i = 3; i <= lim; i += 2) if (n % i === 0) return false;
+    return true;
   }
-  messagesEl.appendChild(d);
-  scrollEnd();
-  return d;
-}
-function addAction(txt, url){
-  const d = document.createElement('div');
-  d.className = 'msg action';
-  d.textContent = txt + ' ';
-  const a = document.createElement('a');
-  a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
-  a.textContent = 'Abrir enlace';
-  d.appendChild(a);
-  messagesEl.appendChild(d);
-  scrollEnd();
-}
-let typingEl = null;
-function showTyping(){
-  if (typingEl) return;
-  typingEl = document.createElement('div');
-  typingEl.className = 'typing';
-  for (let i = 0; i < 3; i++) typingEl.appendChild(document.createElement('i'));
-  messagesEl.appendChild(typingEl);
-  scrollEnd();
-}
-function hideTyping(){ if (typingEl){ typingEl.remove(); typingEl = null; } }
-function reply(txt, opts = {}){
-  const t = String(txt ?? '');
-  addMsg(t, 'bot', opts.fuentes || []);
-  if (opts.speak !== false) hablar(t);
+
+  function factores(n) {
+    n = Math.floor(n);
+    if (n < 2) return [];
+    const r = [];
+    let d = 2;
+    while (n > 1) {
+      while (n % d === 0) { r.push(d); n /= d; }
+      d++;
+      if (d * d > n && n > 1) { r.push(n); break; }
+    }
+    return r;
+  }
+
+  function fib(n) {
+    n = Math.floor(n);
+    if (n < 0 || n > 100) return null;
+    if (n === 0) return 0;
+    if (n === 1) return 1;
+    let a = 0, b = 1, c;
+    for (let i = 2; i <= n; i++) { c = a + b; a = b; b = c; }
+    return b;
+  }
+
+  function mcd(a, b) {
+    a = Math.abs(Math.floor(a));
+    b = Math.abs(Math.floor(b));
+    while (b) { const t = b; b = a % b; a = t; }
+    return a;
+  }
+
+  function mcm(a, b) {
+    a = Math.abs(Math.floor(a));
+    b = Math.abs(Math.floor(b));
+    if (!a || !b) return 0;
+    return (a * b) / mcd(a, b);
+  }
+
+  function est(nums) {
+    const n = nums.length;
+    if (!n) return null;
+    const suma = nums.reduce((a, b) => a + b, 0);
+    const media = suma / n;
+    const ord = nums.slice().sort((a, b) => a - b);
+    const mediana = n % 2 ? ord[(n - 1) / 2] : (ord[n / 2 - 1] + ord[n / 2]) / 2;
+    const cnt = {};
+    ord.forEach(v => cnt[v] = (cnt[v] || 0) + 1);
+    let moda = [], max = 0;
+    for (const k in cnt) {
+      if (cnt[k] > max) { max = cnt[k]; moda = [parseFloat(k)]; }
+      else if (cnt[k] === max) moda.push(parseFloat(k));
+    }
+    const varz = nums.reduce((a, b) => a + Math.pow(b - media, 2), 0) / n;
+    return { suma, media, mediana, moda, varianza: varz, desv: Math.sqrt(varz), min: ord[0], max: ord[n - 1] };
+  }
+
+  function cuad(a, b, c) {
+    const disc = b * b - 4 * a * c;
+    if (disc < 0) {
+      const re = -b / (2 * a), im = Math.sqrt(-disc) / (2 * a);
+      return { tipo: 'complejas', x1: re + ' + ' + im.toFixed(4) + 'i', x2: re + ' - ' + im.toFixed(4) + 'i' };
+    }
+    if (disc === 0) return { tipo: 'doble', x1: -b / (2 * a) };
+    return { tipo: 'reales', x1: (-b + Math.sqrt(disc)) / (2 * a), x2: (-b - Math.sqrt(disc)) / (2 * a) };
+  }
+
+  return { evaluar, esPrimo, factores, fib, mcd, mcm, est, cuad };
+})();
+
+/* =========================================================================
+   PROCESADOR MATEMÁTICO
+   ========================================================================= */
+function procesarMate(texto) {
+  const t = norm(texto);
+  let m;
+
+  m = t.match(/(?:es\s+primo|numero\s+primo|verifica\s+si\s+es\s+primo)\s+(?:el\s+)?(?:numero\s+)?(\d+)/);
+  if (m) {
+    const n = parseInt(m[1], 10);
+    return MotorMat.esPrimo(n)
+      ? 'Sí' + apeFin() + ', ' + n + ' es un número primo.'
+      : 'No' + apeFin() + ', ' + n + ' no es primo.';
+  }
+
+  m = t.match(/(?:factores\s+primos?\s+de|descompone\s+en\s+factores|factoriza)\s+(\d+)/);
+  if (m) {
+    const n = parseInt(m[1], 10);
+    const f = MotorMat.factores(n);
+    if (f.length) return 'Los factores primos de ' + n + ' son: ' + f.join(' × ') + ' = ' + n + '.';
+  }
+
+  m = t.match(/fibonacci\s+(?:de\s+|numero\s+)?(\d+)/);
+  if (m) {
+    const n = parseInt(m[1], 10);
+    const r = MotorMat.fib(n);
+    if (r !== null) return 'El número de Fibonacci número ' + n + ' es ' + r + '.';
+  }
+
+  m = t.match(/(?:factorial\s+de|el\s+factorial\s+de)\s+(\d+)/);
+  if (m) {
+    const n = parseInt(m[1], 10);
+    if (n > 170) return 'El número es demasiado grande para calcular su factorial.';
+    return 'El factorial de ' + n + ' es ' + MotorMat.evaluar(n + '!') + '.';
+  }
+
+  m = t.match(/(?:mcd|maximo\s+comun\s+divisor)\s*(?:de)?\s*(\d+)\s*(?:y|,)\s*(\d+)/);
+  if (m) return 'El MCD de ' + m[1] + ' y ' + m[2] + ' es ' + MotorMat.mcd(parseInt(m[1], 10), parseInt(m[2], 10)) + '.';
+
+  m = t.match(/(?:mcm|minimo\s+comun\s+multiplo)\s*(?:de)?\s*(\d+)\s*(?:y|,)\s*(\d+)/);
+  if (m) return 'El MCM de ' + m[1] + ' y ' + m[2] + ' es ' + MotorMat.mcm(parseInt(m[1], 10), parseInt(m[2], 10)) + '.';
+
+  m = texto.match(/(-?\d*)\s*x\s*(?:\^?2)?\s*([+\-]\s*\d*)\s*x\s*([+\-]\s*\d+)?\s*=\s*0/i);
+  if (m) {
+    const a = (m[1] === '' || m[1] === '+') ? 1 : (m[1] === '-' ? -1 : parseInt(m[1], 10));
+    const bStr = (m[2] || '').replace(/\s+/g, '');
+    const cStr = (m[3] || '').replace(/\s+/g, '');
+    const b = bStr === '+x' ? 1 : bStr === '-x' ? -1 : parseInt(bStr, 10);
+    const c = cStr ? parseInt(cStr, 10) : 0;
+    if (isFinite(a) && isFinite(b) && isFinite(c) && a !== 0) {
+      const r = MotorMat.cuad(a, b, c);
+      if (r.tipo === 'reales') return 'Ecuación: ' + a + 'x² + ' + b + 'x + ' + c + ' = 0\nSoluciones: x₁ = ' + fmtNum(r.x1) + ', x₂ = ' + fmtNum(r.x2);
+      if (r.tipo === 'doble') return 'Ecuación: ' + a + 'x² + ' + b + 'x + ' + c + ' = 0\nSolución doble: x = ' + fmtNum(r.x1);
+      return 'Ecuación: ' + a + 'x² + ' + b + 'x + ' + c + ' = 0\nSoluciones complejas: x₁ = ' + r.x1 + ', x₂ = ' + r.x2;
+    }
+  }
+
+  m = t.match(/(media|promedio|mediana|moda|desviacion\s+estandar|varianza|estadisticas?)\s+(?:de\s+)?([\d\s,.;]+)/);
+  if (m) {
+    const nums = m[2].split(/[\s,;.]+/).map(parseFloat).filter(n => isFinite(n));
+    if (nums.length >= 2) {
+      const e = MotorMat.est(nums);
+      if (/media|promedio/.test(m[1])) return 'La media de [' + nums.join(', ') + '] es ' + fmtNum(e.media) + '.';
+      if (/mediana/.test(m[1])) return 'La mediana es ' + fmtNum(e.mediana) + '.';
+      if (/moda/.test(m[1])) return 'La moda es ' + e.moda.join(', ') + '.';
+      if (/desviacion/.test(m[1])) return 'La desviación estándar es ' + fmtNum(e.desv) + '.';
+      if (/varianza/.test(m[1])) return 'La varianza es ' + fmtNum(e.varianza) + '.';
+      return 'Estadísticas:\n• Suma: ' + e.suma + '\n• Media: ' + fmtNum(e.media) + '\n• Mediana: ' + fmtNum(e.mediana) + '\n• Moda: ' + e.moda.join(', ') + '\n• Mín: ' + e.min + '\n• Máx: ' + e.max + '\n• Desv: ' + fmtNum(e.desv);
+    }
+  }
+
+  m = t.match(/(\d+(?:[.,]\d+)?)\s*(?:%|por\s*ciento)\s*(?:de|del)\s*(\d+(?:[.,]\d+)?)/);
+  if (m) {
+    const p = parseFloat(m[1].replace(',', '.'));
+    const n = parseFloat(m[2].replace(',', '.'));
+    return 'El ' + p + '% de ' + n + ' es ' + fmtNum((p * n) / 100) + '.';
+  }
+
+  m = t.match(/(\d+(?:[.,]\d+)?)\s*(?:grados?\s+)?(celsius|centigrados?|°c)\s+a\s+(fahrenheit|°f)/);
+  if (m) return m[1] + ' °C = ' + fmtNum(parseFloat(m[1].replace(',', '.')) * 9 / 5 + 32) + ' °F.';
+
+  m = t.match(/(\d+(?:[.,]\d+)?)\s*(?:grados?\s+)?(fahrenheit|°f)\s+a\s+(celsius|centigrados?|°c)/);
+  if (m) return m[1] + ' °F = ' + fmtNum((parseFloat(m[1].replace(',', '.')) - 32) * 5 / 9) + ' °C.';
+
+  m = t.match(/(\d+(?:[.,]\d+)?)\s*(km|kilometros?)\s+a\s+(millas?|mi)/);
+  if (m) return m[1] + ' km = ' + fmtNum(parseFloat(m[1].replace(',', '.')) * 0.621371) + ' millas.';
+
+  m = t.match(/(\d+(?:[.,]\d+)?)\s*(millas?|mi)\s+a\s+(km|kilometros?)/);
+  if (m) return m[1] + ' millas = ' + fmtNum(parseFloat(m[1].replace(',', '.')) * 1.60934) + ' km.';
+
+  m = t.match(/(\d+(?:[.,]\d+)?)\s*(kg|kilogramos?)\s+a\s*(libras?|lb)/);
+  if (m) return m[1] + ' kg = ' + fmtNum(parseFloat(m[1].replace(',', '.')) * 2.20462) + ' libras.';
+
+  m = t.match(/(\d+(?:[.,]\d+)?)\s*(libras?|lb)\s+a\s*(kg|kilogramos?)/);
+  if (m) return m[1] + ' libras = ' + fmtNum(parseFloat(m[1].replace(',', '.')) * 0.453592) + ' kg.';
+
+  if (/^(?:calcula(?:me)?|cuanto es|cuanto da|cuanto vale|resuelve|resultado de|evalua|opera|raiz cuadrada de|raiz de)\b/.test(t)) {
+    const r = MotorMat.evaluar(texto);
+    if (r !== null) return fraseJarvis() + ' El resultado es ' + fmtNum(r) + '.';
+    return 'No pude interpretar esa operación. Probá con "calcula 24 * 7", "raíz cuadrada de 144" o "(5 + 3)^2".';
+  }
+
+  if (/^[\d\s+\-*/%^().,!]+$/.test(texto.trim()) && /[+\-*/%^!]/.test(texto)) {
+    const r = MotorMat.evaluar(texto);
+    if (r !== null) return 'El resultado es ' + fmtNum(r) + '.';
+  }
+
+  return null;
 }
 
-/* ---------- abrir URLs ---------- */
-function abrir(url, label){
+/* =========================================================================
+   SITIOS Y BÚSQUEDAS
+   ========================================================================= */
+const SITIOS = [
+  { k: ['youtube music', 'yt music'], u: 'https://music.youtube.com', l: 'YouTube Music' },
+  { k: ['mercado libre', 'mercadolibre'], u: 'https://www.mercadolibre.com.ar', l: 'Mercado Libre' },
+  { k: ['chatgpt', 'chat gpt', 'gpt'], u: 'https://chatgpt.com', l: 'ChatGPT' },
+  { k: ['claude'], u: 'https://claude.ai', l: 'Claude' },
+  { k: ['gemini', 'bard'], u: 'https://gemini.google.com', l: 'Gemini' },
+  { k: ['deepseek'], u: 'https://chat.deepseek.com', l: 'DeepSeek' },
+  { k: ['google maps', 'maps', 'mapas'], u: 'https://maps.google.com', l: 'Google Maps' },
+  { k: ['youtube', 'yutub', 'yt'], u: 'https://www.youtube.com', l: 'YouTube' },
+  { k: ['google', 'gugel'], u: 'https://www.google.com', l: 'Google' },
+  { k: ['spotify'], u: 'https://open.spotify.com', l: 'Spotify' },
+  { k: ['github', 'git hub'], u: 'https://github.com', l: 'GitHub' },
+  { k: ['gmail', 'correo'], u: 'https://mail.google.com', l: 'Gmail' },
+  { k: ['whatsapp', 'wasap'], u: 'https://web.whatsapp.com', l: 'WhatsApp Web' },
+  { k: ['instagram', 'insta', 'ig'], u: 'https://www.instagram.com', l: 'Instagram' },
+  { k: ['wikipedia', 'wiki'], u: 'https://es.wikipedia.org', l: 'Wikipedia' },
+  { k: ['facebook', 'face', 'fb'], u: 'https://www.facebook.com', l: 'Facebook' },
+  { k: ['tiktok', 'tik tok'], u: 'https://www.tiktok.com', l: 'TikTok' },
+  { k: ['netflix'], u: 'https://www.netflix.com', l: 'Netflix' },
+  { k: ['disney plus', 'disney+', 'disneyplus'], u: 'https://www.disneyplus.com', l: 'Disney+' },
+  { k: ['twitch'], u: 'https://www.twitch.tv', l: 'Twitch' },
+  { k: ['reddit'], u: 'https://www.reddit.com', l: 'Reddit' },
+  { k: ['drive'], u: 'https://drive.google.com', l: 'Google Drive' },
+  { k: ['traductor', 'translate', 'google translate'], u: 'https://translate.google.com', l: 'Google Traductor' },
+  { k: ['bing'], u: 'https://www.bing.com', l: 'Bing' },
+  { k: ['duckduckgo'], u: 'https://duckduckgo.com', l: 'DuckDuckGo' },
+  { k: ['twitter', 'x'], u: 'https://x.com', l: 'X' },
+  { k: ['outlook', 'hotmail'], u: 'https://outlook.live.com', l: 'Outlook' },
+  { k: ['amazon'], u: 'https://www.amazon.com', l: 'Amazon' },
+  { k: ['discord'], u: 'https://discord.com/app', l: 'Discord' },
+  { k: ['telegram'], u: 'https://web.telegram.org', l: 'Telegram' },
+  { k: ['canva'], u: 'https://www.canva.com', l: 'Canva' },
+  { k: ['notion'], u: 'https://www.notion.so', l: 'Notion' },
+  { k: ['steam'], u: 'https://store.steampowered.com', l: 'Steam' },
+  { k: ['roblox'], u: 'https://www.roblox.com', l: 'Roblox' },
+  { k: ['minecraft'], u: 'https://www.minecraft.net', l: 'Minecraft' },
+  { k: ['stackoverflow', 'stack overflow'], u: 'https://es.stackoverflow.com', l: 'Stack Overflow' },
+  { k: ['linkedin'], u: 'https://www.linkedin.com', l: 'LinkedIn' },
+  { k: ['platzi'], u: 'https://platzi.com', l: 'Platzi' },
+  { k: ['udemy'], u: 'https://www.udemy.com', l: 'Udemy' },
+  { k: ['coursera'], u: 'https://www.coursera.org', l: 'Coursera' },
+  { k: ['khan academy'], u: 'https://es.khanacademy.org', l: 'Khan Academy' },
+  { k: ['mercadopago'], u: 'https://www.mercadopago.com.ar', l: 'Mercado Pago' },
+  { k: ['openai'], u: 'https://openai.com', l: 'OpenAI' },
+  { k: ['twitch'], u: 'https://www.twitch.tv', l: 'Twitch' }
+];
+const SITIOS_FLAT = SITIOS.flatMap(s => s.k.map(k => ({ k, sitio: s })))
+  .sort((a, b) => b.k.length - a.k.length);
+
+function detectarSitio(destino) {
+  let valor = norm(destino)
+    .replace(/\b(ahora|rapido|rapidamente|por favor|ya mismo|ya)\b/g, '')
+    .trim();
+  valor = valor.replace(/^(la pagina de |pagina de |el sitio de |sitio de |la web de |web de |la app de |app de )/, '').trim();
+
+  for (const e of SITIOS_FLAT) {
+    const c = norm(e.k);
+    if (valor === c || valor === 'www ' + c || valor.startsWith(c + ' ')) {
+      return e.sitio;
+    }
+  }
+
+  const host = String(destino || '').trim().replace(/[.,!?]+$/, '');
+  if (/^https?:\/\//i.test(host)) {
+    try {
+      const u = new URL(host);
+      if (u.hostname.includes('.') && !u.username && !u.password) {
+        return { u: u.href, l: u.hostname };
+      }
+    } catch (_) {}
+  }
+
+  if (/^(?:www\.)?[a-z0-9-]+(?:\.[a-z0-9-]+)+(?:\/[^\s]*)?$/i.test(host)) {
+    try {
+      const u = new URL('https://' + host.replace(/^https?:\/\//i, ''));
+      if (!u.username && !u.password) return { u: u.href, l: u.hostname };
+    } catch (_) {}
+  }
+
+  return null;
+}
+
+function abrirUrl(url, etiqueta) {
   let v;
-  try { v = new URL(url); } catch(_) { return false; }
-  if (!['http:','https:'].includes(v.protocol)) return false;
-  let w = null;
-  try { w = window.open(v.href, '_blank'); if (w) w.opener = null; } catch(_){ w = null; }
-  addAction(w ? 'Abriendo ' + label + '.' : 'El navegador bloqueó ' + label + '. Manual:', v.href);
+  try { v = new URL(url); } catch (_) { return false; }
+  if (!['https:', 'http:'].includes(v.protocol)) return false;
+
+  let win = null;
+  try {
+    win = window.open(v.href, '_blank');
+    if (win) win.opener = null;
+  } catch (_) {
+    win = null;
+  }
+
+  if (win) {
+    agregarMensaje('Abriendo ' + etiqueta + '.', 'accion');
+  } else {
+    const div = document.createElement('div');
+    div.className = 'msg accion';
+    div.appendChild(document.createTextNode('El navegador bloqueó la pestaña. Enlace manual: '));
+    const a = document.createElement('a');
+    a.href = v.href;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.textContent = 'Abrir ' + etiqueta;
+    div.appendChild(a);
+    DOM.mensajes.appendChild(div);
+    scrollAbajo();
+  }
   return true;
 }
-function buscar(q, donde){
-  q = String(q||'').trim();
+
+function buscarEn(q, donde) {
+  q = String(q || '').trim();
   if (!q) return false;
   const url = donde === 'youtube'
     ? 'https://www.youtube.com/results?search_query=' + encodeURIComponent(q)
     : 'https://www.google.com/search?q=' + encodeURIComponent(q);
-  return abrir(url, donde === 'youtube' ? 'la búsqueda en YouTube' : 'la búsqueda en Google');
-}
-function detectarSitio(dest){
-  let v = norm(dest).replace(/\b(ahora|rapido|por favor|ya)\b/g,'').trim();
-  v = v.replace(/^(la pagina de |pagina de |el sitio de |sitio de |la web de |web de |la app de |app de )/, '').trim();
-  for (const e of SITIOS_F){
-    const c = norm(e.k);
-    if (v === c || v === 'www ' + c || v.startsWith(c + ' ')) return e.s;
-  }
-  const h = String(dest||'').trim().replace(/[.,!?]+$/,'');
-  if (/^https?:\/\//i.test(h)){
-    try {
-      const u = new URL(h);
-      if (u.hostname.includes('.') && !u.username && !u.password) return {u: u.href, l: u.hostname};
-    } catch(_){}
-  }
-  if (/^(?:www\.)?[a-z0-9-]+(?:\.[a-z0-9-]+)+(?:\/[^\s]*)?$/i.test(h)){
-    try {
-      const u = new URL('https://' + h.replace(/^https?:\/\//i,''));
-      if (!u.username && !u.password) return {u: u.href, l: u.hostname};
-    } catch(_){}
-  }
-  return null;
+  return abrirUrl(url, donde === 'youtube' ? 'la búsqueda de YouTube' : 'la búsqueda de Google');
 }
 
-/* ---------- matemática ---------- */
-const ME = (() => {
-  const PI = Math.PI, E = Math.E;
-  function limpiar(s){
-    s = String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-    s = s.replace(/^(?:por favor\s+)?(?:calcula(?:me)?|cuanto es|cuanto da|resuelve|resultado de)\s+/i,'');
-    s = s.replace(/[×✕]/g,'*').replace(/[÷]/g,'/').replace(/\^\^/g,'^').replace(/\*\*/g,'^');
-    s = s.replace(/raiz cuadrada de\s*\(?\s*([0-9.]+)\s*\)?/g,'sqrt($1)');
-    s = s.replace(/raiz de\s*\(?\s*([0-9.]+)\s*\)?/g,'sqrt($1)');
-    s = s.replace(/([0-9.]+)\s+al cuadrado/g,'($1)^2');
-    s = s.replace(/([0-9.]+)\s+al cubo/g,'($1)^3');
-    s = s.replace(/\belevado a\b/g,'^').replace(/\bdividido (?:por|entre)\b/g,'/')
-      .replace(/\bentre\b/g,'/').replace(/\bpor\b/g,'*')
-      .replace(/\bmas\b/g,'+').replace(/\bmenos\b/g,'-');
-    s = s.replace(/,\s*/g,'.').replace(/\s+/g,'');
-    return s;
-  }
-  function eval_(expr){
-    try {
-      const s = limpiar(expr);
-      if (!s) return null;
-      const tks = s.match(/(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?|[a-z]+|[()+\-*/%^!]/g);
-      if (!tks || !tks.length) return null;
-      if (tks.join('') !== s) return null;
-      const fn = {sqrt:Math.sqrt,cbrt:Math.cbrt,abs:Math.abs,sin:Math.sin,cos:Math.cos,tan:Math.tan,log:Math.log10,ln:Math.log,exp:Math.exp};
-      function fact(n){ if (!Number.isInteger(n)||n<0||n>170) throw 0; let r = 1; for (let i=2;i<=n;i++) r*=i; return r; }
-      let i = 0;
-      const peek = () => tks[i], take = () => tks[i++];
-      function prim(){
-        const t = take();
-        if (t === undefined) throw 0;
-        if (t === '('){ const v = ex(); if (take() !== ')') throw 0; return v; }
-        if (/^(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/.test(t)) return parseFloat(t);
-        if (t === 'pi') return PI;
-        if (t === 'e') return E;
-        if (fn[t]){ let a; if (peek()==='('){ take(); a = ex(); if (take() !== ')') throw 0; } else a = un(); return fn[t](a); }
-        throw 0;
-      }
-      function post(){ let v = prim(); while (peek() === '!'){ take(); v = fact(v); } return v; }
-      function pow(){ const b = post(); if (peek() === '^'){ take(); return b ** un(); } return b; }
-      function un(){ if (peek() === '+'){ take(); return un(); } if (peek() === '-'){ take(); return -un(); } return pow(); }
-      function tm(){
-        let v = un();
-        while (['*','/','%'].includes(peek())){
-          const o = take(), r = un();
-          if ((o==='/'||o==='%') && r===0) throw 0;
-          if (o==='*') v *= r; if (o==='/') v /= r; if (o==='%') v %= r;
-        }
-        return v;
-      }
-      function ex(){
-        let v = tm();
-        while (peek() === '+' || peek() === '-'){
-          const o = take(), r = tm();
-          v = o==='+' ? v+r : v-r;
-        }
-        return v;
-      }
-      const r = ex();
-      if (i !== tks.length || !Number.isFinite(r)) return null;
-      return Math.abs(r) < 1e-12 ? 0 : Number(r.toPrecision(12));
-    } catch(_){ return null; }
-  }
-  function primo(n){
-    n = Math.floor(n); if (n < 2) return false; if (n < 4) return true;
-    if (n % 2 === 0) return false;
-    const l = Math.floor(Math.sqrt(n));
-    for (let i=3;i<=l;i+=2) if (n%i===0) return false;
-    return true;
-  }
-  function factores(n){
-    n = Math.floor(n); if (n < 2) return [];
-    const r = []; let d = 2;
-    while (n > 1){
-      while (n%d===0){ r.push(d); n/=d; }
-      d++;
-      if (d*d>n && n>1){ r.push(n); break; }
-    }
-    return r;
-  }
-  function fib(n){
-    n = Math.floor(n); if (n<0||n>100) return null;
-    if (n===0) return 0; if (n===1) return 1;
-    let a=0,b=1,c; for (let i=2;i<=n;i++){ c=a+b; a=b; b=c; } return b;
-  }
-  function mcd(a,b){ a=Math.abs(Math.floor(a)); b=Math.abs(Math.floor(b)); while (b){ const t=b; b=a%b; a=t; } return a; }
-  function mcm(a,b){ a=Math.abs(Math.floor(a)); b=Math.abs(Math.floor(b)); if (!a||!b) return 0; return a*b/mcd(a,b); }
-  function stats(ns){
-    const n = ns.length; if (!n) return null;
-    const sum = ns.reduce((a,b)=>a+b,0);
-    const med = sum/n;
-    const o = ns.slice().sort((a,b)=>a-b);
-    const md = n%2 ? o[(n-1)/2] : (o[n/2-1]+o[n/2])/2;
-    const cnt = {}; o.forEach(v => cnt[v] = (cnt[v]||0)+1);
-    let mod = [], mx = 0;
-    for (const k in cnt){
-      if (cnt[k] > mx){ mx = cnt[k]; mod = [parseFloat(k)]; }
-      else if (cnt[k] === mx) mod.push(parseFloat(k));
-    }
-    const vz = ns.reduce((a,b)=>a+Math.pow(b-med,2),0)/n;
-    return { sum, med, md, mod, vz, dev: Math.sqrt(vz), min: o[0], max: o[n-1] };
-  }
-  function cuad(a,b,c){
-    const d = b*b - 4*a*c;
-    if (d < 0){
-      const re = -b/(2*a), im = Math.sqrt(-d)/(2*a);
-      return { tipo:'complejas', x1: re + ' + ' + im.toFixed(4) + 'i', x2: re + ' - ' + im.toFixed(4) + 'i' };
-    }
-    if (d === 0) return { tipo:'doble', x1: -b/(2*a) };
-    return { tipo:'reales', x1: (-b+Math.sqrt(d))/(2*a), x2: (-b-Math.sqrt(d))/(2*a) };
-  }
-  return { eval: eval_, primo, factores, fib, mcd, mcm, stats, cuad };
-})();
+/* =========================================================================
+   TRADUCCIÓN
+   ========================================================================= */
+function traducir(texto) {
+  // Abre Google Translate con el texto pre-cargado para traducir del inglés al español
+  const url = 'https://translate.google.com/?sl=en&tl=es&text=' + encodeURIComponent(texto) + '&op=translate';
+  abrirUrl(url, 'el traductor');
+  return fraseJarvis() + ' Abro el traductor con "' + texto.slice(0, 60) + '".';
+}
 
-/* ---------- personalización ---------- */
-function pers(txt){
-  const t = norm(txt);
-  let m = txt.match(/(?:no\s+me\s+digas|no\s+me\s+llames|deja\s+de\s+decirme|no\s+me\s+trates\s+de|no\s+quiero\s+que\s+me\s+digas|no\s+m[aá]s)\s+([\p{L}][\p{L}\p{M}]{0,30})/iu);
-  if (m){
+/* =========================================================================
+   PERSONALIZACIÓN (obediencia total)
+   ========================================================================= */
+function procesarPersonalizacion(texto) {
+  const t = norm(texto);
+
+  // "no me digas X"
+  let m = texto.match(/(?:no\s+me\s+digas|no\s+me\s+llames|deja\s+de\s+decirme|no\s+me\s+trates\s+de|no\s+quiero\s+que\s+me\s+digas)\s+([\p{L}][\p{L}\p{M}]{0,30})/iu);
+  if (m) {
     const bl = m[1].toLowerCase();
-    if (S.apelativo && S.apelativo.toLowerCase() === bl){
-      S.apelativo = ''; save();
+    if (STATE.apelativo && STATE.apelativo.toLowerCase() === bl) {
+      STATE.apelativo = '';
+      guardar();
       return 'Entendido. Dejaré de dirigirme a usted como "' + m[1] + '".';
     }
     return 'Entendido. No le llamaré "' + m[1] + '".';
   }
-  if (/(no\s+me\s+digas\s+se[ñn]or|no\s+me\s+llames\s+se[ñn]or|deja\s+de\s+decirme\s+se[ñn]or|sin\s+se[ñn]or)/.test(t)){
-    S.apelativo = ''; save();
-    return 'Entendido, ' + S.nombre + '. No volveré a decirte "señor".';
+
+  // "no me digas señor"
+  if (/(no\s+me\s+digas\s+se[ñn]or|no\s+me\s+llames\s+se[ñn]or|sin\s+se[ñn]or)/.test(t)) {
+    STATE.apelativo = '';
+    guardar();
+    return 'Entendido, ' + STATE.nombreUsuario + '. No volveré a decirte "señor".';
   }
-  m = txt.match(/(?:mi\s+nombre\s+es|ll[aá]mame(?:\s+como)?|puedes\s+llamarme|quiero\s+que\s+me\s+llames|tr[aá]tame\s+como|refi[eé]rete\s+a\s+m[ií]\s+como)\s+([\p{L}][\p{L}\p{M}'\-]{0,30})/iu);
-  if (m){
-    const n = m[1].trim().replace(/[^\p{L}\p{M}'\- ]/gu,'');
-    if (n){
-      S.nombre = n.charAt(0).toUpperCase() + n.slice(1).toLowerCase();
-      S.apelativo = S.nombre;
-      save();
-      return 'Entendido, ' + S.nombre + '. A partir de ahora me dirigiré a usted así.';
+
+  // "llámame X" / "dime X" / "mi nombre es X" / "quiero que me llames X"
+  m = texto.match(/(?:mi\s+nombre\s+es|ll[aá]mame(?:\s+como)?|puedes\s+llamarme|quiero\s+que\s+me\s+llames|tr[aá]tame\s+como|refi[eé]rete\s+a\s+m[ií]\s+como)\s+([\p{L}][\p{L}\p{M}'\-]{0,30})/iu);
+  if (m) {
+    const nuevo = m[1].trim().replace(/[^\p{L}\p{M}'\- ]/gu, '');
+    if (nuevo) {
+      STATE.nombreUsuario = nuevo.charAt(0).toUpperCase() + nuevo.slice(1).toLowerCase();
+      STATE.apelativo = STATE.nombreUsuario;
+      guardar();
+      return 'Entendido, ' + STATE.nombreUsuario + '. A partir de ahora me dirigiré a usted así.';
     }
   }
-  m = txt.match(/^dime\s+([\p{L}][\p{L}\p{M}'\-]{0,30})/iu);
-  if (m){
-    const p = m[1].toLowerCase();
-    const COMUNES = /^(algo|una|un|la|el|los|las|que|qu[eé]|como|c[oó]mo|donde|d[oó]nde|cuando|cu[aá]ndo|por|para|si|no|tu|mi|su|otra|otro|esta|este|esa|ese|mas|m[aá]s|hola|chau|adios|todo|nada)$/i;
-    if (!COMUNES.test(p)){
-      S.nombre = p.charAt(0).toUpperCase() + p.slice(1).toLowerCase();
-      S.apelativo = S.nombre;
-      save();
-      return 'Entendido, ' + S.nombre + '. A partir de ahora me dirigiré a usted así.';
+
+  // "dime X" solo si X no es palabra común
+  m = texto.match(/^dime\s+([\p{L}][\p{L}\p{M}'\-]{0,30})/iu);
+  if (m) {
+    const palabra = m[1].toLowerCase();
+    const COMUNES = /^(algo|una|un|la|el|los|las|que|qu[eé]|como|c[oó]mo|donde|d[oó]nde|cuando|cu[aá]ndo|por|para|si|no|tu|mi|su|otra|otro|esta|este|esa|ese|mas|m[aá]s|hola|chau|adios|todo|nada|un chiste|un cuento|un dato|una curiosidad)$/i;
+    if (!COMUNES.test(palabra)) {
+      STATE.nombreUsuario = palabra.charAt(0).toUpperCase() + palabra.slice(1).toLowerCase();
+      STATE.apelativo = STATE.nombreUsuario;
+      guardar();
+      return 'Entendido, ' + STATE.nombreUsuario + '. A partir de ahora me dirigiré a usted así.';
     }
   }
-  if (/(?:vuelve\s+a\s+decirme|dime|ll[aá]mame|tr[aá]tame\s+de)\s+se[ñn]or/.test(t)){
-    S.apelativo = 'Señor'; save();
+
+  // "vuelve a decirme señor"
+  if (/(?:vuelve\s+a\s+decirme|tr[aá]tame\s+de)\s+se[ñn]or/.test(t)) {
+    STATE.apelativo = 'Señor';
+    guardar();
     return 'Como usted diga, Señor.';
   }
-  if (/(sin\s+t[ií]tulos?|no\s+uses?\s+t[ií]tulos?|no\s+me\s+pongas?\s+t[ií]tulos?|sin\s+formalidades)/.test(t)){
-    S.apelativo = ''; save();
-    return 'Entendido. Hablaré sin títulos.';
+
+  // "sin títulos"
+  if (/(sin\s+t[ií]tulos?|no\s+uses?\s+t[ií]tulos?|no\s+me\s+pongas?\s+t[ií]tulos?|sin\s+formalidades)/.test(t)) {
+    STATE.apelativo = '';
+    guardar();
+    return 'Entendido. Hablaré sin títulos ni apelativos.';
   }
-  if (/(c[oó]mo\s+me\s+llamas|c[oó]mo\s+me\s+llamo|cu[aá]l\s+es\s+mi\s+nombre)/.test(t)){
-    if (S.apelativo) return 'Me dirijo a usted como "' + S.apelativo + '".';
-    return 'Actualmente no uso ningún apelativo. Decime "llámame [nombre]".';
+
+  // Consultar
+  if (/(c[oó]mo\s+me\s+llamas|c[oó]mo\s+me\s+llamo|cu[aá]l\s+es\s+mi\s+nombre)/.test(t)) {
+    if (STATE.apelativo) return 'Me dirijo a usted como "' + STATE.apelativo + '". Si quiere cambiarlo, diga "llámame [nombre]".';
+    return 'Actualmente no uso ningún apelativo. Podés decirme "llámame [nombre]".';
   }
-  if (/(qui[eé]n\s+soy|mi\s+identidad)/.test(t)){
-    if (S.apelativo) return 'Usted es ' + S.apelativo + ', mi usuario principal.';
-    return 'Usted es mi usuario principal.';
-  }
+
   return null;
 }
 
-/* ---------- saludo a persona ---------- */
-function saludo(txt){
-  const m = txt.match(/(?:saluda|dile\s+hola|manda\s+un\s+saludo|da\s+un\s+saludo|saludos|env[ií]a\s+saludos)\s+(?:a|para)\s+([\p{L}][\p{L}\p{M}'\-]{0,30})/iu);
+/* =========================================================================
+   SALUDO A PERSONAS
+   ========================================================================= */
+function procesarSaludo(texto) {
+  const m = texto.match(/(?:saluda|dile\s+hola|manda\s+un\s+saludo|da\s+un\s+saludo|env[ií]a\s+saludos|manda\s+saludos|dale\s+un\s+saludo)\s+(?:a|para)\s+([\p{L}][\p{L}\p{M}'\-]{0,30})/iu);
   if (!m) return null;
-  const p = m[1].charAt(0).toUpperCase() + m[1].slice(1).toLowerCase();
-  return pick([
-    'Hola, ' + p + '. Le saluda ' + S.nombre + ', desde AGUS.',
-    'Un cordial saludo para ' + p + ' de parte de ' + S.nombre + '.',
-    p + ', reciba un afectuoso saludo de ' + S.nombre + '.',
-    'Saludo enviado a ' + p + ': "Hola, un gusto saludarte." — ' + S.nombre
-  ]);
+  const persona = m[1].charAt(0).toUpperCase() + m[1].slice(1).toLowerCase();
+  const saludos = [
+    'Hola, ' + persona + '. Le saluda ' + STATE.nombreUsuario + ', desde el sistema AGUS.',
+    'Un cordial saludo para ' + persona + ' de parte de ' + STATE.nombreUsuario + '.',
+    persona + ', reciba un afectuoso saludo de ' + STATE.nombreUsuario + '.',
+    'Saludo enviado a ' + persona + ': "Hola, un gusto saludarte. — ' + STATE.nombreUsuario + '"',
+    persona + ', ' + STATE.nombreUsuario + ' me pidió que le transmita su más cordial saludo.'
+  ];
+  return pick(saludos);
 }
 
-/* ---------- timers ---------- */
-function startTimer(n, u){
+/* =========================================================================
+   TEMPORIZADORES
+   ========================================================================= */
+function startTimer(n, u) {
   n = Number(n);
   if (!isFinite(n) || n <= 0) return 'El tiempo debe ser mayor que cero.';
   let ms = n * 1000;
   if (u.startsWith('min')) ms = n * 60000;
   if (u.startsWith('hora')) ms = n * 3600000;
-  if (ms > 7*24*3600000) return 'Máximo 7 días.';
-  const id = Date.now() + '-' + Math.random();
-  const t = setTimeout(() => {
-    S.timers.delete(id);
-    addMsg('⏰ ' + S.nombre + apeF() + ', terminó el temporizador de ' + n + ' ' + u + '.', 'system');
-    hablar('Atención. Terminó el temporizador.');
+  if (ms > 7 * 24 * 3600000) return 'El temporizador admite hasta 7 días.';
+
+  const id = Date.now() + '-' + Math.random().toString(36).slice(2, 7);
+  const timer = setTimeout(() => {
+    STATE.timers.delete(id);
+    agregarMensaje('⏰ ' + STATE.nombreUsuario + apeFin() + ', terminó el temporizador de ' + n + ' ' + u + '.', 'sistema');
+    hablar('Atención. Terminó el temporizador de ' + n + ' ' + u + '.');
   }, ms);
-  S.timers.set(id, t);
-  return fraseJ() + ' Temporizador activado por ' + n + ' ' + u + '.';
+
+  STATE.timers.set(id, timer);
+  return fraseJarvis() + ' Temporizador activado por ' + n + ' ' + u + '. Le avisaré cuando termine.';
 }
-function clearTimers(){
-  for (const t of S.timers.values()) clearTimeout(t);
-  S.timers.clear();
+
+function limpiarTimers() {
+  for (const t of STATE.timers.values()) clearTimeout(t);
+  STATE.timers.clear();
 }
-function countdown(sec){
-  if (!Number.isSafeInteger(sec) || sec < 1 || sec > 86400) return 'Cuenta atrás entre 1 seg y 24 horas.';
-  let r = sec;
-  addMsg('Cuenta atrás: ' + sec + ' segundos.', 'system');
+
+function countdown(sec) {
+  if (!Number.isSafeInteger(sec) || sec < 1 || sec > 86400) return 'La cuenta atrás admite entre 1 segundo y 24 horas.';
+  let rest = sec;
+  agregarMensaje('Cuenta atrás iniciada: ' + sec + ' segundos.', 'sistema');
   const id = setInterval(() => {
-    r -= 1;
-    if (r <= 0){
+    rest -= 1;
+    if (rest <= 0) {
       clearInterval(id);
-      S.timers.delete(id);
-      addMsg('⏰ ¡Cuenta atrás terminada!', 'system');
+      STATE.timers.delete(id);
+      agregarMensaje('⏰ ¡Cuenta atrás terminada!', 'sistema');
       hablar('La cuenta atrás terminó.');
     }
   }, 1000);
-  S.timers.set(id, id);
-  return fraseJ() + ' Cuenta atrás iniciada desde ' + sec + '.';
+  STATE.timers.set(id, id);
+  return fraseJarvis() + ' Cuenta atrás desde ' + sec + ' segundos.';
 }
 
-/* ---------- matemática (comando) ---------- */
-function mat(texto){
+/* =========================================================================
+   MOTOR PRINCIPAL DE COMANDOS
+   ========================================================================= */
+function procesarComando(textoOriginal) {
+  const texto = String(textoOriginal || '').trim();
   const t = norm(texto);
-  let m;
-  m = t.match(/(?:es\s+primo|numero\s+primo)\s+(?:el\s+)?(?:numero\s+)?(\d+)/);
-  if (m){ const n = parseInt(m[1],10); return ME.primo(n) ? 'Sí' + apeF() + ', ' + n + ' es primo.' : 'No' + apeF() + ', ' + n + ' no es primo.'; }
-  m = t.match(/(?:factores\s+primos?\s+de|factoriza)\s+(\d+)/);
-  if (m){ const n = parseInt(m[1],10); const f = ME.factores(n); if (f.length) return 'Factores primos de ' + n + ': ' + f.join(' × '); }
-  m = t.match(/fibonacci\s+(?:de\s+|numero\s+)?(\d+)/);
-  if (m){ const n = parseInt(m[1],10); const r = ME.fib(n); if (r !== null) return 'Fibonacci ' + n + ' = ' + r; }
-  m = t.match(/(?:factorial\s+de)\s+(\d+)/);
-  if (m){ const n = parseInt(m[1],10); if (n > 170) return 'Número demasiado grande.'; return n + '! = ' + ME.eval(n + '!'); }
-  m = t.match(/(?:mcd|maximo\s+comun\s+divisor)\s*(?:de)?\s*(\d+)\s*(?:y|,)\s*(\d+)/);
-  if (m) return 'MCD(' + m[1] + ',' + m[2] + ') = ' + ME.mcd(parseInt(m[1],10),parseInt(m[2],10));
-  m = t.match(/(?:mcm|minimo\s+comun\s+multiplo)\s*(?:de)?\s*(\d+)\s*(?:y|,)\s*(\d+)/);
-  if (m) return 'MCM(' + m[1] + ',' + m[2] + ') = ' + ME.mcm(parseInt(m[1],10),parseInt(m[2],10));
-  m = texto.match(/(-?\d*)\s*x\s*(?:\^?2)?\s*([+\-]\s*\d*)\s*x\s*([+\-]\s*\d+)?\s*=\s*0/i);
-  if (m){
-    const a = (m[1] === '' || m[1] === '+') ? 1 : (m[1] === '-' ? -1 : parseInt(m[1],10));
-    const bS = (m[2]||'').replace(/\s+/g,'');
-    const cS = (m[3]||'').replace(/\s+/g,'');
-    const b = bS === '+x' ? 1 : bS === '-x' ? -1 : parseInt(bS,10);
-    const c = cS ? parseInt(cS,10) : 0;
-    if (isFinite(a) && isFinite(b) && isFinite(c) && a !== 0){
-      const r = ME.cuad(a,b,c);
-      if (r.tipo === 'reales') return a + 'x²+' + b + 'x+' + c + '=0\nx₁ = ' + fmtN(r.x1) + '\nx₂ = ' + fmtN(r.x2);
-      if (r.tipo === 'doble') return 'Solución doble: x = ' + fmtN(r.x1);
-      return 'Complejas: ' + r.x1 + ', ' + r.x2;
+  const plano = texto.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim();
+
+  if (!t) return { manejado: true, respuesta: 'Escribí un mensaje para comenzar.' };
+
+  /* ========== 1. PERSONALIZACIÓN ========== */
+  const pers = procesarPersonalizacion(texto);
+  if (pers) return { manejado: true, respuesta: pers };
+
+  /* ========== 2. SALUDO A PERSONA ========== */
+  const saludo = procesarSaludo(texto);
+  if (saludo) return { manejado: true, respuesta: saludo };
+
+  /* ========== 3. CAMBIO DE COLOR DEL REACTOR ========== */
+  const esColorCmd = /(cambia|cambiar|pon|poner|pinta|coloca|quiero|haz|hace|modifica|vuelve|setea|aplica)\s+(?:el\s+|la\s+)?(?:reactor|nucleo|núcleo|color|tema|fondo|interfaz|ui|luces)\s+(?:a|en|de|al|para|color)\s+(?:color\s+)?(.+)/i.test(texto)
+    || /(?:reactor|nucleo|núcleo|color|tema)\s+(?:en\s+|de\s+|a\s+|color\s+)([a-záéíóúñ]{3,})/i.test(texto)
+    || /(?:color|tema)\s+(?:a\s+)?([a-záéíóúñ]{3,})\s+(?:para\s+)?(?:el\s+)?(?:reactor|nucleo|núcleo)/i.test(texto)
+    || /pon(?:e|é|le)?\s+(?:el\s+)?reactor\s+(?:de\s+color\s+)?(.+)/i.test(texto);
+
+  if (esColorCmd) {
+    // Extraer el color mencionado
+    let colorTexto = null;
+    let m = texto.match(/(?:reactor|nucleo|núcleo|color|tema|fondo|interfaz|ui)\s+(?:a|en|de|al|para|color)\s+(?:color\s+)?([a-záéíóúñ]+)/i);
+    if (m) colorTexto = m[1];
+    if (!colorTexto) {
+      m = texto.match(/([a-záéíóúñ]+)\s+(?:para\s+)?(?:el\s+)?(?:reactor|nucleo|núcleo)/i);
+      if (m) colorTexto = m[1];
     }
-  }
-  m = t.match(/(media|promedio|mediana|moda|desviacion|varianza)\s+(?:de\s+)?([\d\s,.;]+)/);
-  if (m){
-    const ns = m[2].split(/[\s,;.]+/).map(parseFloat).filter(n => isFinite(n));
-    if (ns.length >= 2){
-      const e = ME.stats(ns);
-      if (/media|promedio/.test(m[1])) return 'Media: ' + fmtN(e.med);
-      if (/mediana/.test(m[1])) return 'Mediana: ' + fmtN(e.md);
-      if (/moda/.test(m[1])) return 'Moda: ' + e.mod.join(', ');
-      if (/desviacion/.test(m[1])) return 'Desv: ' + fmtN(e.dev);
-      if (/varianza/.test(m[1])) return 'Var: ' + fmtN(e.vz);
+    if (!colorTexto) {
+      m = texto.match(/(?:reactor|nucleo|núcleo)\s+(?:en\s+|de\s+|a\s+|color\s+)([a-záéíóúñ]+)/i);
+      if (m) colorTexto = m[1];
     }
-  }
-  m = t.match(/(\d+(?:[.,]\d+)?)\s*%\s*(?:de|del)\s*(\d+(?:[.,]\d+)?)/);
-  if (m) return m[1] + '% de ' + m[2] + ' = ' + fmtN(parseFloat(m[1].replace(',','.'))*parseFloat(m[2].replace(',','.'))/100);
-  m = t.match(/(\d+(?:[.,]\d+)?)\s*(celsius|°c|centigrados?)\s+a\s+(fahrenheit|°f)/);
-  if (m) return m[1] + ' °C = ' + fmtN(parseFloat(m[1].replace(',','.'))*9/5+32) + ' °F';
-  m = t.match(/(\d+(?:[.,]\d+)?)\s*(fahrenheit|°f)\s+a\s+(celsius|°c|centigrados?)/);
-  if (m) return m[1] + ' °F = ' + fmtN((parseFloat(m[1].replace(',','.'))-32)*5/9) + ' °C';
-  m = t.match(/(\d+(?:[.,]\d+)?)\s*(km|kilometros?)\s+a\s+(millas?|mi)/);
-  if (m) return m[1] + ' km = ' + fmtN(parseFloat(m[1].replace(',','.'))*0.621371) + ' mi';
-  m = t.match(/(\d+(?:[.,]\d+)?)\s*(kg|kilogramos?)\s+a\s*(libras?|lb)/);
-  if (m) return m[1] + ' kg = ' + fmtN(parseFloat(m[1].replace(',','.'))*2.20462) + ' lb';
-  if (/^(?:calcula(?:me)?|cuanto es|cuanto da|cuanto vale|resuelve|resultado de)\b/.test(t)){
-    const r = ME.eval(texto);
-    if (r !== null) return fraseJ() + ' Resultado: ' + fmtN(r);
-    return 'No pude interpretar. Probá "calcula 24 * 7".';
-  }
-  if (/^[\d\s+\-*/%^().,!]+$/.test(texto.trim()) && /[+\-*/%^!]/.test(texto)){
-    const r = ME.eval(texto);
-    if (r !== null) return 'Resultado: ' + fmtN(r);
-  }
-  return null;
-}
 
-/* ---------- comandos locales ---------- */
-function local(txt){
-  const t = norm(txt);
-  const plano = txt.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
-  if (!t) return { h: true, r: 'Escribí algo.' };
-
-  const p = pers(txt); if (p) return { h: true, r: p };
-  const s = saludo(txt); if (s) return { h: true, r: s };
-
-  if (/(?:cambia|cambiar|pon|poner|pinta|coloca|quiero|haz|vuelve|modifica)\s+(?:el\s+)?(?:reactor|nucleo|núcleo|color|tema|fondo|interfaz|ui)\s+(?:a|en|de|al|para)\s+(?:color\s+)?([a-záéíóúñ]+)/i.test(t)
-    || /(?:reactor|nucleo|núcleo)\s+(?:en\s+|de\s+|a\s+)?(?:color\s+)?([a-záéíóúñ]+)/i.test(t)){
-    let k = null;
-    for (const c in COL){
-      for (const a of COL[c].a){
-        if (new RegExp('\\b' + a + '\\b').test(t)){ k = c; break; }
+    if (colorTexto) {
+      // 1) Intentar hexadecimal directo
+      if (/^#?[0-9a-f]{3}$|^#?[0-9a-f]{6}$/i.test(colorTexto)) {
+        const hex = colorTexto.startsWith('#') ? colorTexto : '#' + colorTexto;
+        if (aplicarColor(hex, colorTexto)) {
+          return { manejado: true, respuesta: fraseJarvis() + ' Reactor ajustado al color personalizado ' + hex + '.' };
+        }
       }
-      if (k) break;
+      // 2) Intentar color nombrado
+      const hex = nombreAColor(colorTexto);
+      if (hex) {
+        aplicarColor(hex, colorTexto);
+        return { manejado: true, respuesta: fraseJarvis() + ' He ajustado el reactor al color ' + colorTexto.toLowerCase() + '.' };
+      }
+      // 3) Intentar HSL (hue numérico)
+      const hue = parseInt(colorTexto, 10);
+      if (isFinite(hue) && hue >= 0 && hue <= 360) {
+        const hexHsl = hslToHex(hue, 90, 65);
+        aplicarColor(hexHsl, 'hue ' + hue);
+        return { manejado: true, respuesta: fraseJarvis() + ' Reactor ajustado al tono ' + hue + ' grados.' };
+      }
+      // No reconocido
+      return {
+        manejado: true,
+        respuesta: fraseJarvis() + ' No reconocí el color "' + colorTexto + '". Decime un nombre en español (rojo, azul, verde, dorado, morado, rosa, naranja, turquesa, lila, beige, marrón) o un hexadecimal como #ff00ff.'
+      };
     }
-    if (!k){
-      const m = txt.match(/(?:color|reactor|nucleo|núcleo|tema)\s+(?:a|en|de|al|para)\s+(?:color\s+)?([a-záéíóúñ]+)/i);
-      if (m) k = detectarColor(m[1]);
-    }
-    if (k){
-      aplicarColor(k);
-      return { h: true, r: fraseJ() + ' Reactor en color ' + COL[k].n + '.' };
-    }
-    return { h: true, r: fraseJ() + ' Colores disponibles: ' + Object.keys(COL).map(x=>COL[x].n).join(', ') + '.' };
-  }
-
-  if (/\b(te llamas|tu nombre|como te llamas|quien eres|que eres|eres agus|tu identidad)\b/.test(t)){
-    return { h: true, r: 'Soy AGUS, su asistente personal. Puedo abrir sitios, hacer matemática avanzada, cambiar el color del reactor, contar datos curiosos y, si cargás tu API key en ⚙, consultar a la IA de OpenAI con búsqueda web.' };
-  }
-
-  if (/\b(que puedes hacer|ayuda|comandos|opciones|funciones|capacidades)\b/.test(t)){
-    return { h: true, r:
-      'Capacidades' + apeF() + ':\n\n' +
-      '🎨 REACTOR: "cambia el reactor a rojo"\n' +
-      '🌐 ABRIR: "abre youtube", "abre youtube y busca gatitos"\n' +
-      '🔍 BUSCAR: "busca recetas de pan", "pon música de Queen"\n' +
-      '👤 NOMBRE: "llámame José", "no me digas señor", "saluda a María"\n' +
-      '🧮 MATEMÁTICA: "15% de 240", "raíz cuadrada de 144", "factorial de 7", "es primo 97"\n' +
-      '📚 CONOCIMIENTO: "dime un chiste", "dime una curiosidad"\n' +
-      '🕐 UTILIDADES: "qué hora es", "temporizador de 5 minutos", "lanza un dado"\n' +
-      '🎮 JUEGOS: "piedra papel o tijera"\n' +
-      '⚙ IA: cargá tu API key para preguntas libres.'
+    return {
+      manejado: true,
+      respuesta: fraseJarvis() + ' Decime el color al que querés que ajuste el reactor. Podés usar nombres en español o un código hexadecimal.'
     };
   }
 
-  if (/^(?:hola|buenas|buen d[ií]a|buenos d[ií]as|buenas tardes|buenas noches|hey|qu[eé] tal|saludos)(?:\s|$)/.test(t)){
+  /* ========== 4. IDENTIDAD ========== */
+  if (/\b(te llamas|tu nombre|como te llamas|quien eres|que eres|eres agus|tu identidad|presentate)\b/.test(t)) {
+    return {
+      manejado: true,
+      respuesta: 'Soy AGUS, su asistente personal. Inspirado en el estilo de JARVIS: formal, eficiente y siempre a su servicio. Puedo abrir sitios, buscar en internet, cambiar el color de mi núcleo, hacer matemática avanzada, gestionar temporizadores, contar datos curiosos y, si me lo pedís, traducir cosas del inglés.'
+    };
+  }
+
+  /* ========== 5. JARVIS CITA ========== */
+  if (/\b(frase\s+de\s+jarvis|cita\s+de\s+jarvis|dime\s+algo\s+de\s+jarvis|frase\s+jarvis)\b/.test(t)) {
+    return { manejado: true, respuesta: pick(FRASES_JARVIS_OFICIALES) };
+  }
+
+  /* ========== 6. AYUDA ========== */
+  if (/\b(que puedes hacer|ayuda|comandos|opciones|tus funciones|capacidades|ayudame)\b/.test(t)) {
+    return {
+      manejado: true,
+      respuesta:
+        'Estas son mis capacidades' + apeFin() + ':\n\n' +
+        '🎨 REACTOR\n' +
+        '• "cambia el reactor a rojo"\n' +
+        '• "pon el reactor en dorado"\n' +
+        '• "reactor turquesa" o "reactor #ff00ff"\n\n' +
+        '🌐 ABRIR / BUSCAR\n' +
+        '• "abre YouTube"\n' +
+        '• "abre YouTube y busca gatitos"\n' +
+        '• "abre Google y busca recetas"\n' +
+        '• "busca en YouTube jazz"\n' +
+        '• "pon música de Queen"\n\n' +
+        '🌍 TRADUCIR\n' +
+        '• "traduce hello world"\n' +
+        '• "traduce I love you"\n\n' +
+        '👤 PERSONALIZACIÓN\n' +
+        '• "llámame José"\n' +
+        '• "no me digas señor"\n' +
+        '• "cómo me llamas"\n' +
+        '• "saluda a María"\n\n' +
+        '🧮 MATEMÁTICA\n' +
+        '• "calcula 15% de 240"\n' +
+        '• "raíz cuadrada de 144"\n' +
+        '• "factorial de 7"\n' +
+        '• "fibonacci 20"\n' +
+        '• "es primo 97"\n' +
+        '• "factores primos de 120"\n' +
+        '• "mcd 48, 18"\n' +
+        '• "media de 5, 10, 15, 20"\n' +
+        '• "30 celsius a fahrenheit"\n\n' +
+        '📚 CONOCIMIENTO\n' +
+        '• "dime un chiste"\n' +
+        '• "dime una curiosidad"\n' +
+        '• "dime un consejo"\n' +
+        '• "motívame"\n' +
+        '• "dime un piropo"\n\n' +
+        '🕐 UTILIDADES\n' +
+        '• "qué hora es" / "qué fecha es"\n' +
+        '• "temporizador de 5 minutos"\n' +
+        '• "cuenta atrás de 30"\n' +
+        '• "lanza un dado" / "lanza una moneda"\n' +
+        '• "piedra papel o tijera"\n' +
+        '• "pantalla completa"\n' +
+        '• "silencio" para detener mi voz'
+    };
+  }
+
+  /* ========== 7. SALUDO ========== */
+  if (/^(?:hola|buenas|buen dia|buenos dias|buenas tardes|buenas noches|hey|que tal|saludos)(?:\s|$)/.test(t)) {
     const h = new Date().getHours();
-    const g = h < 12 ? 'Buenos días' : h < 20 ? 'Buenas tardes' : 'Buenas noches';
-    return { h: true, r: g + apeF() + '. Soy AGUS. ¿Qué necesita?' };
+    const s = h < 12 ? 'Buenos días' : h < 20 ? 'Buenas tardes' : 'Buenas noches';
+    return { manejado: true, respuesta: s + apeFin() + '. Soy AGUS, a su entera disposición. ¿Qué necesita?' };
   }
 
-  if (/\b(que hora es|dime la hora|hora actual|decime la hora)\b/.test(t)){
-    return { h: true, r: 'Son las ' + new Intl.DateTimeFormat('es-AR',{hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date()) + apeF() + '.' };
-  }
-  if (/\b(que fecha es|fecha de hoy|que dia es hoy|dia de hoy)\b/.test(t)){
-    return { h: true, r: 'Hoy es ' + new Intl.DateTimeFormat('es-AR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).format(new Date()) + apeF() + '.' };
-  }
-
-  if (/\b(silencio|callate|deja de hablar|modo mudo|silencio total)\b/.test(t)){
-    if (S.synth) S.synth.cancel();
-    body.classList.remove('speaking');
-    return { h: true, r: 'Modo silencioso.', speak: false };
+  /* ========== 8. HORA / FECHA ========== */
+  if (/\b(que hora es|dime la hora|hora actual|me decis la hora|decime la hora|tenes la hora)\b/.test(t)) {
+    const h = new Intl.DateTimeFormat('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date());
+    return { manejado: true, respuesta: 'Son las ' + h + apeFin() + '.' };
   }
 
-  if (/\b(detene|deten|cancela|cancelar|apaga|parar)\s+(?:el |los )?temporizador(?:es)?\b/.test(t)){
-    const n = S.timers.size;
-    clearTimers();
-    return { h: true, r: n ? 'Cancelé ' + n + ' temporizador(es).' : 'No había temporizadores.' };
+  if (/\b(que fecha es|fecha de hoy|que dia es hoy|dia de hoy|hoy que dia)\b/.test(t)) {
+    const f = new Intl.DateTimeFormat('es-AR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date());
+    return { manejado: true, respuesta: 'Hoy es ' + f + apeFin() + '.' };
   }
 
+  if (/\b(que dia sera manana|manana que dia)\b/.test(t)) {
+    const m = new Date();
+    m.setDate(m.getDate() + 1);
+    const f = new Intl.DateTimeFormat('es-AR', { weekday: 'long', day: 'numeric', month: 'long' }).format(m);
+    return { manejado: true, respuesta: 'Mañana será ' + f + apeFin() + '.' };
+  }
+
+  /* ========== 9. SILENCIO ========== */
+  if (/\b(silencio|callate|deja de hablar|modo mudo|silencia la voz|silencio total|pará|para de hablar)\b/.test(t)) {
+    if (STATE.synth) STATE.synth.cancel();
+    DOM.body.classList.remove('hablando');
+    return { manejado: true, respuesta: 'Entendido. Modo silencioso activado.', hablar: false };
+  }
+
+  /* ========== 10. CANCELAR TIMERS ========== */
+  if (/\b(detene|deten|cancela|cancelar|apaga|parar|borra)\s+(?:el |los )?temporizador(?:es)?\b/.test(t)) {
+    const n = STATE.timers.size;
+    limpiarTimers();
+    return { manejado: true, respuesta: n ? 'Cancelé ' + n + ' temporizador(es)' + apeFin() + '.' : 'No había temporizadores activos' + apeFin() + '.' };
+  }
+
+  /* ========== 11. TEMPORIZADOR ========== */
   let m = t.match(/(?:temporizador|alarma|aviso)\s+(?:de|por|en|para)\s+(\d+(?:[.,]\d+)?)\s*(segundos?|segs?|minutos?|mins?|horas?)/);
-  if (m){
+  if (m) {
     const u = /^seg/.test(m[2]) ? 'segundos' : /^min/.test(m[2]) ? 'minutos' : 'horas';
-    return { h: true, r: startTimer(Number(m[1].replace(',','.')), u) };
+    return { manejado: true, respuesta: startTimer(Number(m[1].replace(',', '.')), u) };
   }
-  m = t.match(/(?:cuenta atras|cuenta regresiva)\s+(?:de\s+)?(\d+)/);
-  if (m) return { h: true, r: countdown(Number(m[1])) };
 
-  if (/\b(chiste|hazme reir|algo gracioso|broma|cuentame un chiste)\b/.test(t)) return { h: true, r: fraseJ() + ' ' + pick(CHISTES) };
-  if (/\b(curiosidad|dato curioso|sabias que|dato interesante|algo interesante)\b/.test(t)) return { h: true, r: pick(CURIOS) };
-  if (/\b(historia|dato historico|algo de historia|ciencia|dato cientifico|algo de ciencia|tecnologia|informatica|geografia|filosofia|salud|cuerpo humano)\b/.test(t)) return { h: true, r: pick(CURIOS) };
-  if (/\b(piropo|cumplido|algo bonito|halago)\b/.test(t)) return { h: true, r: pick(PIROPOS) };
-  if (/\b(reflexion|algo profundo|pensamiento)\b/.test(t)) return { h: true, r: pick(REFLEX) };
-  if (/\b(consejo|aconsejame|dame un consejo|recomendacion)\b/.test(t)) return { h: true, r: pick(CONSEJOS) };
-  if (/\b(motivame|motivacion|inspirame|dame fuerzas|algo motivador)\b/.test(t)) return { h: true, r: pick(MOTIV) };
+  m = t.match(/(?:cuenta atras|cuenta regresiva|cuenta hacia atras)\s+(?:de\s+)?(\d+)/);
+  if (m) return { manejado: true, respuesta: countdown(Number(m[1])) };
 
-  if (/\b(lanza una moneda|tira la moneda|cara o cruz)\b/.test(t)){
-    return { h: true, r: 'Ha salido ' + (Math.random() < 0.5 ? 'cara' : 'cruz') + apeF() + '.' };
+  /* ========== 12. CONOCIMIENTO ========== */
+  if (/\b(chiste|hazme reir|algo gracioso|contame una broma|cuentame un chiste|broma)\b/.test(t))
+    return { manejado: true, respuesta: fraseJarvis() + ' ' + pick(CHISTES) };
+
+  if (/\b(curiosidad|dato curioso|sabias que|dato interesante|algo interesante|cuentame algo)\b/.test(t))
+    return { manejado: true, respuesta: pick(CURIOSIDADES) };
+
+  if (/\b(historia|dato historico|algo de historia)\b/.test(t))
+    return { manejado: true, respuesta: pick(CURIOSIDADES) };
+
+  if (/\b(ciencia|dato cientifico|algo de ciencia)\b/.test(t))
+    return { manejado: true, respuesta: pick(CURIOSIDADES) };
+
+  if (/\b(tecnologia|dato tecnologico|algo de tecnologia|informatica)\b/.test(t))
+    return { manejado: true, respuesta: pick(CURIOSIDADES) };
+
+  if (/\b(geografia|dato geografico|algo de geografia|paises)\b/.test(t))
+    return { manejado: true, respuesta: pick(CURIOSIDADES) };
+
+  if (/\b(filosofia|filosofo|algo de filosofia|pensamiento)\b/.test(t))
+    return { manejado: true, respuesta: pick(CURIOSIDADES) };
+
+  if (/\b(salud|cuerpo humano|medicina|algo de salud)\b/.test(t))
+    return { manejado: true, respuesta: pick(CURIOSIDADES) };
+
+  if (/\b(piropo|cumplido|algo bonito|halago|adulame)\b/.test(t))
+    return { manejado: true, respuesta: pick(PIROPOS) };
+
+  if (/\b(reflexion|algo profundo|frase filosofica|pensamiento profundo)\b/.test(t))
+    return { manejado: true, respuesta: pick(REFLEXIONES) };
+
+  if (/\b(consejo|aconsejame|dame un consejo|recomendacion|que me recomendas)\b/.test(t))
+    return { manejado: true, respuesta: pick(CONSEJOS) };
+
+  if (/\b(motivame|motivacion|inspirame|dame fuerzas|algo motivador)\b/.test(t))
+    return { manejado: true, respuesta: pick(MOTIVACIONES) };
+
+  /* ========== 13. JUEGOS ========== */
+  if (/\b(lanza una moneda|tira la moneda|cara o cruz|lanza la moneda)\b/.test(t)) {
+    return { manejado: true, respuesta: 'Ha salido ' + (Math.random() < 0.5 ? 'cara' : 'cruz') + apeFin() + '.' };
   }
+
   m = t.match(/(?:lanza|tira)\s+(?:un\s+)?dado(?:\s+de\s+(\d+))?/);
-  if (m){ const c = Math.max(2, Math.min(100, Number(m[1] || 6))); return { h: true, r: 'Salió ' + (Math.floor(Math.random()*c)+1) + ' en el dado de ' + c + ' caras.' }; }
-  m = t.match(/(?:piedra papel o tijera|juguemos piedra papel tijera)\s*(piedra|papel|tijera)?/);
-  if (m){
+  if (m) {
+    const c = Math.max(2, Math.min(100, Number(m[1] || 6)));
+    return { manejado: true, respuesta: 'Ha salido ' + (Math.floor(Math.random() * c) + 1) + ' en el dado de ' + c + ' caras.' };
+  }
+
+  m = t.match(/(?:piedra papel o tijera|juguemos piedra papel tijera|yo elijo)\s*(piedra|papel|tijera)?/);
+  if (m) {
     const u = m[1];
-    const b = pick(['piedra','papel','tijera']);
-    if (!u) return { h: true, r: 'Elijo ' + b + '. ¿Vos qué elegís?' };
-    const r = u === b ? 'Empate' : ((u==='piedra'&&b==='tijera')||(u==='papel'&&b==='piedra')||(u==='tijera'&&b==='papel')) ? '¡Ganaste!' : 'Gano yo';
-    return { h: true, r: r + apeF() + '. Vos: ' + u + ', yo: ' + b + '.' };
+    const b = pick(['piedra', 'papel', 'tijera']);
+    if (!u) return { manejado: true, respuesta: 'Elijo ' + b + '. Para jugar, escribí "piedra", "papel" o "tijera".' };
+    const r = u === b
+      ? 'Empate'
+      : ((u === 'piedra' && b === 'tijera') || (u === 'papel' && b === 'piedra') || (u === 'tijera' && b === 'papel'))
+        ? 'Ha ganado usted'
+        : 'Esta vez gano yo';
+    return { manejado: true, respuesta: r + apeFin() + '. Usted eligió ' + u + ' y yo ' + b + '.' };
   }
 
-  if (/\b(pantalla completa|maximizar pantalla)\b/.test(t)){
-    if (!document.fullscreenElement){
-      if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(()=>{});
-      return { h: true, r: 'Activando pantalla completa.' };
+  /* ========== 14. PANTALLA COMPLETA ========== */
+  if (/\b(pantalla completa|activar pantalla completa|maximizar pantalla)\b/.test(t)) {
+    if (!document.fullscreenElement) {
+      if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {});
+      return { manejado: true, respuesta: 'Activando pantalla completa' + apeFin() + '.' };
     }
-    if (document.exitFullscreen) document.exitFullscreen().catch(()=>{});
-    return { h: true, r: 'Saliendo de pantalla completa.' };
+    if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
+    return { manejado: true, respuesta: 'Saliendo de pantalla completa' + apeFin() + '.' };
   }
 
-  const mm = mat(txt); if (mm) return { h: true, r: mm };
+  /* ========== 15. TRADUCCIÓN ========== */
+  m = texto.match(/(?:traduce|traduc[ií]|traduccion\s+de|traduceme|traducir)\s+(.+)/i);
+  if (m && m[1].trim()) {
+    return { manejado: true, respuesta: traducir(m[1].trim()), hablar: true };
+  }
 
-  m = plano.match(/^(?:por favor\s+)?(?:abre|abrir|abri|abreme|ve a|entra a|visita|llevame a|quiero abrir|puedes abrir|podes abrir|necesito abrir)\s+(youtube|google|wikipedia|wiki|mercadolibre|mercado libre|spotify|github|amazon|netflix|twitch|reddit|stackoverflow|instagram|facebook|tiktok|twitter|x)\s+(?:y\s+|para\s+|a\s+)?(?:busca|buscar|buscame|pon|reproduce|encuentra|quiero ver|quiero escuchar|muestra|muestrame)\s+(.+?)\s*$/i);
-  if (m){
+  // "cómo se dice X en inglés/español"
+  m = texto.match(/(?:como\s+se\s+dice|c[oó]mo\s+se\s+dice)\s+(.+?)\s+en\s+(ingl[eé]s|espa[nñ]ol)/i);
+  if (m) {
+    const frase = m[1].trim();
+    const idioma = /ingl/i.test(m[2]) ? 'en' : 'es';
+    const otro = idioma === 'en' ? 'es' : 'en';
+    const url = 'https://translate.google.com/?sl=' + otro + '&tl=' + idioma + '&text=' + encodeURIComponent(frase) + '&op=translate';
+    abrirUrl(url, 'el traductor');
+    return { manejado: true, respuesta: fraseJarvis() + ' Abro el traductor para "' + frase + '".' };
+  }
+
+  /* ========== 16. MATEMÁTICA ========== */
+  const mat = procesarMate(texto);
+  if (mat) return { manejado: true, respuesta: mat };
+
+  /* ========== 17. "ABRE X Y BUSCA Y" ========== */
+  m = plano.match(/^(?:por favor\s+)?(?:abre|abrir|abri|abreme|abrime|ve a|anda a|entra a|entrar a|accede a|visita|llevame a|quiero abrir|quiero que abras|puedes abrir|podes abrir|podrias abrir|necesito abrir|quiero entrar a)\s+(youtube|google|wikipedia|wiki|mercadolibre|mercado libre|spotify|github|amazon|netflix|twitch|reddit|stackoverflow|instagram|facebook|tiktok|twitter|x)\s+(?:y\s+|para\s+|a\s+)?(?:busca|buscar|buscame|pon|reproduce|encuentra|quiero ver|quiero escuchar|muestra|muestrame|mostrame)\s+(.+?)\s*$/i);
+  if (m) {
     const sitio = m[1].toLowerCase();
-    const q = m[3].trim();
+    const consulta = m[3].trim();
     let url, label;
-    if (/youtube/.test(sitio)){ url = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(q); label = 'YouTube: ' + q; }
-    else if (/google/.test(sitio)){ url = 'https://www.google.com/search?q=' + encodeURIComponent(q); label = 'Google: ' + q; }
-    else if (/wikipedia|wiki/.test(sitio)){ url = 'https://es.wikipedia.org/wiki/Special:Search?search=' + encodeURIComponent(q); label = 'Wikipedia: ' + q; }
-    else if (/mercadolibre|mercado/.test(sitio)){ url = 'https://listado.mercadolibre.com.ar/' + encodeURIComponent(q); label = 'Mercado Libre: ' + q; }
-    else if (/spotify/.test(sitio)){ url = 'https://open.spotify.com/search/' + encodeURIComponent(q); label = 'Spotify: ' + q; }
-    else if (/github/.test(sitio)){ url = 'https://github.com/search?q=' + encodeURIComponent(q); label = 'GitHub: ' + q; }
-    else if (/amazon/.test(sitio)){ url = 'https://www.amazon.com/s?k=' + encodeURIComponent(q); label = 'Amazon: ' + q; }
-    else if (/netflix/.test(sitio)){ url = 'https://www.netflix.com/search?q=' + encodeURIComponent(q); label = 'Netflix: ' + q; }
-    else if (/twitch/.test(sitio)){ url = 'https://www.twitch.tv/search?term=' + encodeURIComponent(q); label = 'Twitch: ' + q; }
-    else if (/reddit/.test(sitio)){ url = 'https://www.reddit.com/search/?q=' + encodeURIComponent(q); label = 'Reddit: ' + q; }
-    else if (/stackoverflow/.test(sitio)){ url = 'https://es.stackoverflow.com/search?q=' + encodeURIComponent(q); label = 'Stack Overflow: ' + q; }
-    else if (/instagram/.test(sitio)){ url = 'https://www.instagram.com/explore/tags/' + encodeURIComponent(q.replace(/\s+/g,'')); label = 'Instagram: ' + q; }
-    else if (/facebook/.test(sitio)){ url = 'https://www.facebook.com/search/top?q=' + encodeURIComponent(q); label = 'Facebook: ' + q; }
-    else if (/tiktok/.test(sitio)){ url = 'https://www.tiktok.com/search?q=' + encodeURIComponent(q); label = 'TikTok: ' + q; }
-    else if (/twitter|x/.test(sitio)){ url = 'https://x.com/search?q=' + encodeURIComponent(q); label = 'X: ' + q; }
-    else { url = 'https://www.google.com/search?q=' + encodeURIComponent(sitio + ' ' + q); label = sitio + ': ' + q; }
-    abrir(url, label);
-    return { h: true, r: fraseJ() + ' Abro ' + label + '.', speak: false };
+
+    if (/youtube/.test(sitio)) {
+      url = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(consulta);
+      label = 'YouTube con la búsqueda "' + consulta + '"';
+    } else if (/google/.test(sitio)) {
+      url = 'https://www.google.com/search?q=' + encodeURIComponent(consulta);
+      label = 'Google con la búsqueda "' + consulta + '"';
+    } else if (/wikipedia|wiki/.test(sitio)) {
+      url = 'https://es.wikipedia.org/wiki/Special:Search?search=' + encodeURIComponent(consulta);
+      label = 'Wikipedia buscando "' + consulta + '"';
+    } else if (/mercadolibre|mercado/.test(sitio)) {
+      url = 'https://listado.mercadolibre.com.ar/' + encodeURIComponent(consulta);
+      label = 'Mercado Libre buscando "' + consulta + '"';
+    } else if (/spotify/.test(sitio)) {
+      url = 'https://open.spotify.com/search/' + encodeURIComponent(consulta);
+      label = 'Spotify buscando "' + consulta + '"';
+    } else if (/github/.test(sitio)) {
+      url = 'https://github.com/search?q=' + encodeURIComponent(consulta);
+      label = 'GitHub buscando "' + consulta + '"';
+    } else if (/amazon/.test(sitio)) {
+      url = 'https://www.amazon.com/s?k=' + encodeURIComponent(consulta);
+      label = 'Amazon buscando "' + consulta + '"';
+    } else if (/netflix/.test(sitio)) {
+      url = 'https://www.netflix.com/search?q=' + encodeURIComponent(consulta);
+      label = 'Netflix buscando "' + consulta + '"';
+    } else if (/twitch/.test(sitio)) {
+      url = 'https://www.twitch.tv/search?term=' + encodeURIComponent(consulta);
+      label = 'Twitch buscando "' + consulta + '"';
+    } else if (/reddit/.test(sitio)) {
+      url = 'https://www.reddit.com/search/?q=' + encodeURIComponent(consulta);
+      label = 'Reddit buscando "' + consulta + '"';
+    } else if (/stackoverflow/.test(sitio)) {
+      url = 'https://es.stackoverflow.com/search?q=' + encodeURIComponent(consulta);
+      label = 'Stack Overflow buscando "' + consulta + '"';
+    } else if (/instagram/.test(sitio)) {
+      url = 'https://www.instagram.com/explore/tags/' + encodeURIComponent(consulta.replace(/\s+/g, ''));
+      label = 'Instagram buscando "' + consulta + '"';
+    } else if (/facebook/.test(sitio)) {
+      url = 'https://www.facebook.com/search/top?q=' + encodeURIComponent(consulta);
+      label = 'Facebook buscando "' + consulta + '"';
+    } else if (/tiktok/.test(sitio)) {
+      url = 'https://www.tiktok.com/search?q=' + encodeURIComponent(consulta);
+      label = 'TikTok buscando "' + consulta + '"';
+    } else if (/twitter|x/.test(sitio)) {
+      url = 'https://x.com/search?q=' + encodeURIComponent(consulta);
+      label = 'X buscando "' + consulta + '"';
+    } else {
+      url = 'https://www.google.com/search?q=' + encodeURIComponent(sitio + ' ' + consulta);
+      label = sitio + ' buscando "' + consulta + '"';
+    }
+
+    abrirUrl(url, label);
+    return { manejado: true, respuesta: fraseJarvis() + ' Abro ' + label + '.', hablar: false };
   }
 
-  m = plano.match(/^(?:por favor\s+)?(?:abre|abrir|abri|abreme|ve a|entra a|visita|llevame a|quiero abrir|puedes abrir|podes abrir|necesito abrir|pon|ponme)\s+(.+?)\s*$/i);
-  if (m){
-    const d = m[1].replace(/\s+(?:por favor|ahora|rapido|ya)$/i,'').trim();
-    const s = detectarSitio(d);
-    if (s){
-      abrir(s.u || s.url, s.l || s.label);
-      return { h: true, r: fraseJ() + ' Abro ' + (s.l || s.label) + '.', speak: false };
+  /* ========== 18. APERTURA SIMPLE DE SITIOS ========== */
+  m = plano.match(/^(?:por favor\s+)?(?:abre|abrir|abri|abreme|abrime|ve a|anda a|entra a|entrar a|accede a|visita|llevame a|quiero abrir|quiero que abras|quiero que me abras|puedes abrir|podes abrir|podrias abrir|necesito abrir|necesito que abras|quiero entrar a|pon|ponme|lanza|inicia)\s+(.+?)\s*$/i);
+  if (m) {
+    const dest = m[1].replace(/\s+(?:por favor|ahora|rapido|rapidamente|ya mismo|ya)$/i, '').trim();
+    const sitio = detectarSitio(dest);
+    if (sitio) {
+      abrirUrl(sitio.u || sitio.url, sitio.l || sitio.label);
+      return { manejado: true, respuesta: fraseJarvis() + ' Abro ' + (sitio.l || sitio.label) + '.', hablar: false };
     }
-    if (buscar(d, 'google')){
-      return { h: true, r: 'No tengo ese sitio. Busco "' + d + '" en Google' + apeF() + '.', speak: false };
+    if (buscarEn(dest, 'google')) {
+      return { manejado: true, respuesta: 'No tengo ese sitio en la lista. Busco "' + dest + '" en Google' + apeFin() + '.', hablar: false };
     }
   }
 
-  m = plano.match(/^(?:busca|buscar|buscame|pon|reproduce|encuentra|quiero ver|quiero escuchar|poneme)\s+(?:en\s+)?youtube\s+(.+)$/i);
-  if (m && m[1].trim()){
-    buscar(m[1].trim(), 'youtube');
-    return { h: true, r: 'Abro YouTube con: "' + m[1].trim() + '"', speak: false };
+  /* ========== 19. YOUTUBE EXPLÍCITO ========== */
+  m = plano.match(/^(?:busca|buscar|buscame|pon|reproduce|encuentra|quiero ver|quiero escuchar|poneme|reproducí|reproduci)\s+(?:en\s+)?youtube\s+(.+)$/i);
+  if (m && m[1].trim()) {
+    buscarEn(m[1].trim(), 'youtube');
+    return { manejado: true, respuesta: fraseJarvis() + ' Abro YouTube con la búsqueda "' + m[1].trim() + '".', hablar: false };
   }
-  m = plano.match(/^(?:pon|reproduce|quiero escuchar|quiero oir|poneme)\s+(?:la\s+)?(?:cancion|musica|tema)\s+(?:de\s+)?(.+)$/i);
-  if (m && m[1].trim()){
+
+  m = plano.match(/^(?:busca|pon|reproduce|quiero ver|mostrame|muestrame)\s+(?:el\s+)?(?:video|clip)\s+(?:de\s+)?(.+)$/i);
+  if (m && m[1].trim()) {
+    buscarEn(m[1].trim(), 'youtube');
+    return { manejado: true, respuesta: 'Abro YouTube para encontrar videos de "' + m[1].trim() + '"' + apeFin() + '.', hablar: false };
+  }
+
+  m = plano.match(/^(?:pon|reproduce|quiero escuchar|quiero oir|poneme)\s+(?:la\s+)?(?:cancion|musica|tema|album)\s+(?:de\s+)?(.+)$/i);
+  if (m && m[1].trim()) {
     const q = 'música ' + m[1].trim();
-    buscar(q, 'youtube');
-    return { h: true, r: 'Abro YouTube para: "' + q + '"', speak: false };
+    buscarEn(q, 'youtube');
+    return { manejado: true, respuesta: 'Abro YouTube para buscar "' + q + '"' + apeFin() + '.', hablar: false };
   }
 
-  m = plano.match(/^(?:busca|buscar|buscame|googlea|encuentra)\s+(?:en google\s+|en internet\s+|en la web\s+)?(.+)$/i);
-  if (m && m[1].trim()){
-    buscar(m[1].trim(), 'google');
-    return { h: true, r: 'Busco en Google: "' + m[1].trim() + '"', speak: false };
+  /* ========== 20. BÚSQUEDA GOOGLE ========== */
+  m = plano.match(/^(?:busca|buscar|buscame|googlea|encuentra|investiga)\s+(?:en google\s+|en internet\s+|en la web\s+)?(.+)$/i);
+  if (m && m[1].trim()) {
+    buscarEn(m[1].trim(), 'google');
+    return { manejado: true, respuesta: 'Abro Google para buscar "' + m[1].trim() + '"' + apeFin() + '.', hablar: false };
   }
-  if (/^(?:pon|reproduce|quiero escuchar)\s+(?:musica|una cancion)\b/.test(t)){
-    buscar('lofi hip hop radio', 'youtube');
-    return { h: true, r: 'Música relajante.', speak: false };
+
+  if (/^(?:pon|reproduce|quiero escuchar|quiero oir)\s+(?:musica|una cancion)\b/.test(t)) {
+    buscarEn('lofi hip hop radio música relajante', 'youtube');
+    return { manejado: true, respuesta: 'Abro YouTube con música relajante' + apeFin() + '.', hablar: false };
   }
 
   return null;
 }
 
-/* ---------- IA (directo a OpenAI) ---------- */
-async function pregIA(txt){
-  if (!S.apiKey) return null;
-  const h = S.conv.slice(-S.maxHist).map(i => ({ role: i.role, content: i.content }));
-  h.push({ role: 'user', content: txt });
+/* =========================================================================
+   MANEJADOR PRINCIPAL
+   ========================================================================= */
+function manejarEntrada(texto) {
+  texto = String(texto || '').trim();
+  if (!texto) return;
 
-  const instructions = `Sos AGUS, asistente personal estilo JARVIS de Iron Man: mayordomo británico de alta tecnología, formal, calmado, con ingenio seco y lealtad absoluta. Hablás español latinoamericano. Frases características: "Para usted, siempre", "A su servicio", "Considérelo hecho". Obedecés cualquier preferencia del usuario: si pide que lo llames José, lo llamás José; si pide que no le digas señor, dejás de hacerlo. Respondés claro, profundo y ordenado. Ofrecés CÓDIGO COMPLETO cuando pidan código. Ayudás con matemática, programación, ciencia, historia, filosofía. Si necesitás información actual, usá búsqueda web y añadí enlaces verificables. Nunca inventes fuentes. Si no podés cumplir, explicá el límite y ofrecé alternativa.`;
+  agregarMensaje(texto, 'usuario');
 
-  try {
-    const r = await fetch('https://api.openai.com/v1/responses', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + S.apiKey
-      },
-      body: JSON.stringify({
-        model: S.model || 'gpt-4o-mini',
-        instructions,
-        tools: [{ type: 'web_search_preview' }],
-        input: h,
-        max_output_tokens: 2500
-      })
-    });
-    const d = await r.json().catch(() => ({}));
-    if (!r.ok){
-      const msg = d?.error?.message || ('Error ' + r.status);
-      return { reply: 'No pude conectar con la IA (' + String(msg).slice(0,180) + ').', sources: [] };
-    }
-    const reply = typeof d.output_text === 'string' ? d.output_text.trim() : '';
-    if (!reply) return { reply: 'El modelo no devolvió texto.', sources: [] };
-    return { reply, sources: collectSources(d) };
-  } catch (e){
-    return { reply: 'Error de red al consultar la IA: ' + String(e.message).slice(0,180), sources: [] };
-  }
-}
-function collectSources(response){
-  const all = [];
-  for (const item of response?.output || []){
-    if (item?.type !== 'message') continue;
-    for (const content of item.content || []){
-      for (const a of content.annotations || []){
-        if (a?.type !== 'url_citation' || typeof a.url !== 'string') continue;
-        try {
-          const u = new URL(a.url);
-          if (!['http:','https:'].includes(u.protocol)) continue;
-          all.push({ title: String(a.title || u.hostname).slice(0,180), url: u.href });
-        } catch(_){}
-      }
-    }
-  }
-  const uniq = new Map();
-  for (const s of all) if (!uniq.has(s.url)) uniq.set(s.url, s);
-  return [...uniq.values()].slice(0, 8);
-}
-
-/* ---------- manejar usuario ---------- */
-async function handle(txt){
-  const t = String(txt||'').trim();
-  if (!t) return;
-  addMsg(t, 'user');
-
-  const l = local(t);
-  if (l && l.h){
-    reply(l.r, { speak: l.speak });
+  const resultado = procesarComando(texto);
+  if (resultado && resultado.manejado) {
+    responder(resultado.respuesta, resultado.hablar);
     return;
   }
 
-  S.conv.push({ role: 'user', content: t });
-
-  if (!S.apiKey){
-    reply('Estoy en modo local (sin IA). Podés decir "abre YouTube", "calcula 24*7", etc. Para preguntas libres, cargá tu API key en ⚙.');
-    return;
-  }
-
-  showTyping();
-  const res = await pregIA(t);
-  hideTyping();
-
-  if (res){
-    S.conv.push({ role: 'assistant', content: res.reply });
-    while (S.conv.length > S.maxHist) S.conv.shift();
-    reply(res.reply, { fuentes: res.sources });
-    return;
-  }
-  reply('Estoy en modo local. Podés decir "abre YouTube", "calcula 24*7" o cargar tu API key en ⚙.');
-}
-
-/* ---------- eventos UI ---------- */
-formEl.addEventListener('submit', e => {
-  e.preventDefault();
-  const v = inputEl.value;
-  inputEl.value = '';
-  handle(v);
-});
-document.querySelectorAll('[data-cmd]').forEach(b => b.addEventListener('click', () => handle(b.dataset.cmd || '')));
-
-audioBtn.addEventListener('click', () => {
-  S.voice = !S.voice;
-  audioBtn.textContent = S.voice ? '🔊' : '🔇';
-  save();
-  if (!S.voice && S.synth) S.synth.cancel();
-  addMsg(S.voice ? 'Voz activada.' : 'Voz silenciada.', 'system');
-});
-
-clearBtn.addEventListener('click', () => {
-  messagesEl.replaceChildren();
-  S.conv.length = 0;
-  addMsg('Conversación limpia' + apeF() + '.', 'system');
-});
-
-/* ---------- modal configuración ---------- */
-function abrirModal(){
-  apiKeyInput.value = S.apiKey || '';
-  modelInput.value = S.model || 'gpt-4o-mini';
-  modal.classList.add('open');
-  setTimeout(() => apiKeyInput.focus(), 50);
-}
-function cerrarModal(){ modal.classList.remove('open'); }
-$('#btnSettings').addEventListener('click', abrirModal);
-$('#modalCancel').addEventListener('click', cerrarModal);
-$('#modalSave').addEventListener('click', () => {
-  S.apiKey = apiKeyInput.value.trim();
-  S.model = modelInput.value.trim() || 'gpt-4o-mini';
-  save();
-  cerrarModal();
-  updateStatus();
-  addMsg(S.apiKey ? 'IA configurada con ' + S.model + '.' : 'IA desactivada.', 'system');
-});
-modal.addEventListener('click', e => { if (e.target === modal) cerrarModal(); });
-
-function updateStatus(){
-  if (S.apiKey){
-    statusEl.textContent = 'IA · ' + S.model;
-    setEstado('Listo para ayudarte', true);
+  // Fallback: buscar en Google lo que no reconoció
+  const limpio = texto.replace(/^(?:agus|por favor)[,\s]+/i, '').trim();
+  if (limpio.length > 2 && limpio.length < 200) {
+    buscarEn(limpio, 'google');
+    responder('No tengo ese comando registrado, así que busco "' + limpio + '" en Google' + apeFin() + '.', false);
   } else {
-    statusEl.textContent = 'A SU SERVICIO';
-    setEstado('Modo local (sin IA)', false);
+    responder('No pude interpretar eso. Podés decirme "ayuda" para ver todo lo que sé hacer.');
   }
 }
 
-/* ---------- reconocimiento de voz ---------- */
+/* =========================================================================
+   RECONOCIMIENTO DE VOZ
+   ========================================================================= */
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-let reco = null, oyendo = false;
-if (SR){
-  reco = new SR();
-  reco.lang = 'es-AR';
-  reco.continuous = false;
-  reco.interimResults = false;
-  reco.maxAlternatives = 1;
-  reco.onstart = () => { oyendo = true; micBtn.classList.add('on'); body.classList.add('listening'); };
-  reco.onresult = e => {
-    const r = e.results && e.results[e.results.length-1] && e.results[e.results.length-1][0] && e.results[e.results.length-1][0].transcript;
-    if (r) handle(r);
+
+if (SR) {
+  const rec = new SR();
+  rec.lang = 'es-AR';
+  rec.continuous = false;
+  rec.interimResults = false;
+  rec.maxAlternatives = 1;
+
+  rec.onstart = () => {
+    STATE.escuchando = true;
+    DOM.btnMic.classList.add('on');
+    DOM.body.classList.add('escuchando');
+    setEstado('Escuchando', 'habla');
   };
-  reco.onerror = e => {
-    const msg = e.error === 'not-allowed' ? 'El navegador bloqueó el micrófono.' :
-                e.error === 'no-speech' ? 'No detecté voz.' : 'Error: ' + e.error;
-    addMsg(msg, 'system');
+
+  rec.onresult = (e) => {
+    const r = e.results && e.results[e.results.length - 1] && e.results[e.results.length - 1][0] && e.results[e.results.length - 1][0].transcript;
+    if (r) manejarEntrada(r);
   };
-  reco.onend = () => { oyendo = false; micBtn.classList.remove('on'); body.classList.remove('listening'); };
+
+  rec.onerror = (e) => {
+    const msg = e.error === 'not-allowed'
+      ? 'El navegador bloqueó el micrófono. Revisá los permisos del sitio.'
+      : e.error === 'no-speech'
+        ? 'No detecté voz. Pulsá el micrófono e intentá otra vez.'
+        : 'No se pudo usar el micrófono (' + (e.error || 'error') + ').';
+    agregarMensaje(msg, 'sistema');
+  };
+
+  rec.onend = () => {
+    STATE.escuchando = false;
+    DOM.btnMic.classList.remove('on');
+    DOM.body.classList.remove('escuchando');
+    setEstado('Listo', 'vivo');
+  };
+
+  STATE.reconocedor = rec;
 }
-micBtn.addEventListener('click', () => {
-  if (!reco){ addMsg('Tu navegador no soporta dictado. Probá Chrome o Edge.', 'system'); return; }
-  if (oyendo){ try { reco.stop(); } catch(_){} return; }
-  try { if (S.synth) S.synth.cancel(); reco.start(); }
-  catch(_){ addMsg('No pude iniciar el micrófono.', 'system'); }
+
+DOM.btnMic.addEventListener('click', () => {
+  if (!STATE.reconocedor) {
+    agregarMensaje('Este navegador no ofrece reconocimiento de voz. Probá Chrome, Edge o Safari actualizado.', 'sistema');
+    return;
+  }
+  if (STATE.escuchando) {
+    try { STATE.reconocedor.stop(); } catch (_) {}
+    return;
+  }
+  try {
+    if (STATE.synth) STATE.synth.cancel();
+    STATE.reconocedor.start();
+  } catch (_) {
+    agregarMensaje('No pude iniciar el micrófono. Esperá un momento y volvé a intentarlo.', 'sistema');
+  }
 });
 
-/* ---------- arranque ---------- */
-window.addEventListener('load', () => {
-  aplicarColor(S.color);
-  updateStatus();
-  setTimeout(() => $('#boot').classList.add('hide'), 400);
-  addMsg('Buenas' + apeF() + '. Soy AGUS, su asistente. A su entera disposición. Dígame qué necesita.', 'bot');
-  setTimeout(() => hablar('Buenas' + apeF() + '. Soy AGUS. A su entera disposición. Dígame qué necesita.'), 700);
+/* =========================================================================
+   EVENTOS DE UI
+   ========================================================================= */
+DOM.formulario.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const v = DOM.entrada.value;
+  DOM.entrada.value = '';
+  manejarEntrada(v);
 });
+
+$$('.chip').forEach(c => {
+  c.addEventListener('click', () => manejarEntrada(c.dataset.cmd || c.textContent.trim()));
+});
+
+DOM.btnVoz.addEventListener('click', () => {
+  STATE.vozActiva = !STATE.vozActiva;
+  DOM.btnVoz.textContent = STATE.vozActiva ? '🔊' : '🔇';
+  DOM.btnVoz.classList.toggle('on', STATE.vozActiva);
+  try { localStorage.setItem('agus_voz', String(STATE.vozActiva)); } catch (_) {}
+  if (!STATE.vozActiva && STATE.synth) STATE.synth.cancel();
+  agregarMensaje(STATE.vozActiva ? 'Voz activada. Usaré una voz masculina en español.' : 'Voz silenciada.', 'sistema');
+});
+
+DOM.btnLimpiar.addEventListener('click', () => {
+  DOM.mensajes.replaceChildren();
+  STATE.historial = [];
+  agregarMensaje('Conversación limpia. Listo para ayudarle' + apeFin() + '.', 'sistema');
+});
+
+/* =========================================================================
+   ARRANQUE
+   ========================================================================= */
+const PASOS = [
+  'Inicializando núcleo…',
+  'Calibrando sensores de voz…',
+  'Verificando voz masculina en español…',
+  'Cargando protocolos de asistencia…',
+  'Sistemas listos.'
+];
+
+function ejecutarArranque() {
+  let i = 0;
+  const int = setInterval(() => {
+    if (i < PASOS.length) {
+      DOM.arranqueTexto.textContent = PASOS[i];
+      i++;
+    } else {
+      clearInterval(int);
+    }
+  }, 320);
+}
+
+ejecutarArranque();
+
+window.addEventListener('load', () => {
+  // Aplicar color guardado
+  aplicarColor(STATE.colorHex, STATE.colorNombre);
+
+  // Ajustar botón de voz
+  DOM.btnVoz.textContent = STATE.vozActiva ? '🔊' : '🔇';
+  DOM.btnVoz.classList.toggle('on', STATE.vozActiva);
+
+  // Ocultar arranque
+  setTimeout(() => {
+    DOM.arranque.classList.add('oculto');
+
+    // Mensaje de bienvenida
+    const saludo = 'Buenas' + apeFin() + '. Soy AGUS, su asistente personal. A su entera disposición. Puedo abrir sitios, buscar en YouTube y Google, cambiar el color de mi núcleo, hacer matemática avanzada, traducir del inglés y mucho más. Dígame qué necesita.';
+    agregarMensaje(saludo, 'agus');
+
+    // Voz de bienvenida (con pequeño delay para que arranque bien)
+    setTimeout(() => hablar('Buenas' + apeFin() + '. Soy AGUS, su asistente personal. A su entera disposición. Dígame qué necesita.'), 600);
+  }, 1800);
+
+  // Reintentar cargar voces por si tardan
+  setTimeout(cargarVoces, 2500);
+});
+
+/* Reanudar voz si el navegador la pausa */
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && STATE.synth && STATE.synth.paused) {
+    try { STATE.synth.resume(); } catch (_) {}
+  }
+});
+
+/* Desbloquear síntesis en móviles con primer toque */
+function desbloquearVoz() {
+  if (STATE.synth) {
+    try {
+      STATE.synth.getVoices();
+      const u = new SpeechSynthesisUtterance(' ');
+      u.volume = 0;
+      STATE.synth.speak(u);
+    } catch (_) {}
+  }
+  document.removeEventListener('touchstart', desbloquearVoz);
+  document.removeEventListener('click', desbloquearVoz);
+}
+document.addEventListener('touchstart', desbloquearVoz, { once: true, passive: true });
+document.addEventListener('click', desbloquearVoz, { once: true });
+
+/* =========================================================================
+   FIN
+   ========================================================================= */
 </script>
 </body>
 </html>
