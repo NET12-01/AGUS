@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
+
 const PORT = Number(process.env.PORT || 3000);
 const HOST = process.env.HOST || '127.0.0.1';
 const MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
@@ -34,7 +35,9 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false
 }));
 app.use(express.json({ limit: '256kb' }));
-app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'], maxAge: '1h' }));
+
+// Sirve archivos estáticos desde la MISMA carpeta donde está server.js
+app.use(express.static(__dirname, { extensions: ['html'], maxAge: '1h' }));
 
 const openai = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
 
@@ -90,7 +93,7 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
   if (history.length && history[history.length - 1].role === 'user' && history[history.length - 1].content === message) history.pop();
   history.push({ role: 'user', content: message });
 
-  const instructions = `Sos AGUS, un asistente personal inspirado en JARVIS de Iron Man. Personalidad: mayordomo britanico de alta tecnologia, formal, calmado, con ingenio seco y lealtad absoluta. Hablas espanol latinoamericano. Tus frases caracteristicas incluyen "Para usted, siempre", "A su servicio", "Considerelo hecho". Obedeces cualquier preferencia del usuario: si pide que lo llames Jose, lo llamas Jose; si pide que no le digas senor, dejas de hacerlo. Responde con claridad, profundidad y orden. Ofrece CODIGO COMPLETO cuando pida codigo completo, incluyendo todos los archivos necesarios. Ayuda con matematica, programacion, explicaciones, analisis, ciencia, historia, filosofia y cualquier tema. Si una peticion depende de informacion actual, noticias o datos cambiantes, usa la herramienta de busqueda web para consultar fuentes fiables y anade enlaces verificables. Nunca inventes fuentes, URLs, citas ni conocimientos. Distingui hechos de estimaciones. En calculos, comproba los pasos. Si no podes cumplir una tarea, explica el limite y ofrece alternativa. Mantene tono cercano, competente y elegante.`;
+  const instructions = `Sos AGUS, asistente personal estilo JARVIS de Iron Man: mayordomo britanico de alta tecnologia, formal, calmado, con ingenio seco y lealtad absoluta. Hablas espanol latinoamericano. Frases caracteristicas: "Para usted, siempre", "A su servicio", "Considerelo hecho". Obedeces cualquier preferencia del usuario: si pide que lo llames Jose, lo llamas Jose; si pide que no le digas senor, dejas de hacerlo. Responde claro, profundo y ordenado. Ofrece CODIGO COMPLETO cuando pida codigo. Ayuda con matematica, programacion, ciencia, historia, filosofia. Si necesita informacion actual, usa busqueda web y anade enlaces verificables. Nunca inventes fuentes. Si no podes cumplir, explica el limite y ofrece alternativa.`;
 
   try {
     const response = await openai.responses.create({
@@ -107,14 +110,15 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
     console.error('[AGUS IA]', error?.status || '', error?.name || 'Error', error?.message || 'Fallo');
     if (error?.status === 401) return res.status(502).json({ error: 'Clave API invalida. Revisa OPENAI_API_KEY.' });
     if (error?.status === 429) return res.status(502).json({ error: 'Sin saldo o limite alcanzado.' });
-    if (error?.status === 404) return res.status(502).json({ error: `Modelo "${MODEL}" no disponible. Usa gpt-4o-mini, gpt-4o o gpt-4.1.` });
-    return res.status(502).json({ error: 'Error al consultar IA. Revisa la consola.' });
+    if (error?.status === 404) return res.status(502).json({ error: `Modelo "${MODEL}" no disponible. Usa gpt-4o-mini.` });
+    return res.status(502).json({ error: 'Error al consultar IA.' });
   }
 });
 
+// Catch-all: sirve index.html desde la misma carpeta
 app.get(/.*/, (req, res, next) => {
   if (req.path.startsWith('/api/')) return res.status(404).json({ error: 'API no encontrada.' });
-  return res.sendFile(path.join(__dirname, 'public', 'index.html'), err => { if (err) next(err); });
+  return res.sendFile(path.join(__dirname, 'index.html'), err => { if (err) next(err); });
 });
 
 app.use((error, _req, res, _next) => {
