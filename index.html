@@ -17,423 +17,215 @@
     --muted:#7f9cae;
     --ok:#56f0b0;
     --warn:#ffbd70;
+    --danger:#ff4d5e;
     --radius:14px;
   }
   html,body{
-    width:100%;
-    height:100%;
-    overflow:hidden;
-    background:var(--bg);
-    color:var(--text);
+    width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-    -webkit-font-smoothing:antialiased;
-    -webkit-tap-highlight-color:transparent;
+    -webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;
     overscroll-behavior:none;
   }
   body{
     background:radial-gradient(ellipse at 50% 0%,#0e2b44 0%,#050b13 60%);
-    position:fixed;
-    inset:0;
+    position:fixed;inset:0;
   }
-
-  /* ---------- LAYOUT PRINCIPAL ---------- */
   .app{
-    display:grid;
-    grid-template-rows:auto auto 1fr auto;
-    height:100dvh;
-    height:100vh;
+    display:grid;grid-template-rows:auto auto 1fr auto;
+    height:100dvh;height:100vh;
     padding-top:env(safe-area-inset-top);
     padding-bottom:env(safe-area-inset-bottom);
     padding-left:env(safe-area-inset-left);
     padding-right:env(safe-area-inset-right);
   }
 
-  /* ---------- HEADER ---------- */
+  /* HEADER */
   header{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:10px 14px;
-    background:rgba(4,12,22,.85);
+    display:flex;align-items:center;justify-content:space-between;
+    padding:10px 14px;background:rgba(4,12,22,.85);
     border-bottom:1px solid var(--border);
-    backdrop-filter:blur(12px);
-    -webkit-backdrop-filter:blur(12px);
-    gap:8px;
-    min-width:0;
+    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+    gap:8px;min-width:0;
   }
-  .brand{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    min-width:0;
-    flex:1;
-  }
+  .brand{display:flex;align-items:center;gap:8px;min-width:0;flex:1}
   .logo{
-    width:28px;
-    height:28px;
-    border-radius:50%;
+    width:28px;height:28px;border-radius:50%;
     border:2px solid var(--cyan);
     box-shadow:0 0 10px rgba(72,228,255,.5);
-    position:relative;
-    flex-shrink:0;
+    position:relative;flex-shrink:0;
   }
   .logo::after{
-    content:"";
-    position:absolute;
-    inset:5px;
-    border-radius:50%;
-    background:var(--cyan);
-    animation:pulse 2s infinite;
+    content:"";position:absolute;inset:5px;border-radius:50%;
+    background:var(--cyan);animation:pulse 2s infinite;
   }
   h1{
-    font-size:14px;
-    letter-spacing:2.5px;
-    color:#fff;
-    font-weight:700;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
+    font-size:14px;letter-spacing:2.5px;color:#fff;font-weight:700;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   }
-  .actions{
-    display:flex;
-    gap:6px;
-    flex-shrink:0;
-  }
+  .actions{display:flex;gap:6px;flex-shrink:0}
   .btn{
-    background:var(--cyan-soft);
-    border:1px solid var(--border);
-    color:var(--text);
-    border-radius:8px;
-    padding:7px 10px;
-    font-size:12px;
-    cursor:pointer;
-    font-family:inherit;
-    white-space:nowrap;
-    min-height:34px;
-    display:inline-flex;
-    align-items:center;
-    gap:4px;
-    transition:background .15s;
+    background:var(--cyan-soft);border:1px solid var(--border);color:var(--text);
+    border-radius:8px;padding:7px 10px;font-size:12px;cursor:pointer;
+    font-family:inherit;white-space:nowrap;min-height:34px;
+    display:inline-flex;align-items:center;gap:4px;transition:background .15s;
   }
   .btn:active{background:rgba(72,228,255,.25)}
+  .btn.primary{background:var(--cyan);color:#04141c;border-color:var(--cyan)}
 
-  /* ---------- REACTOR COMPACTO ---------- */
+  /* REACTOR */
   .reactor-bar{
-    display:flex;
-    align-items:center;
-    gap:12px;
-    padding:10px 14px;
-    background:rgba(8,20,34,.6);
-    border-bottom:1px solid var(--border);
+    display:flex;align-items:center;gap:12px;padding:10px 14px;
+    background:rgba(8,20,34,.6);border-bottom:1px solid var(--border);
   }
-  .reactor{
-    width:44px;
-    height:44px;
-    position:relative;
-    flex-shrink:0;
-    display:grid;
-    place-items:center;
-  }
-  .ring{
-    position:absolute;
-    border:1px solid var(--border);
-    border-radius:50%;
-  }
-  .r1{
-    inset:0;
-    border-top-color:var(--cyan);
-    border-bottom-color:var(--cyan);
-    animation:spin 8s linear infinite;
-  }
-  .r2{
-    inset:6px;
-    border-left-color:var(--cyan);
-    border-right-color:var(--cyan);
-    animation:spin 5s linear infinite reverse;
-  }
+  .reactor{width:44px;height:44px;position:relative;flex-shrink:0;display:grid;place-items:center}
+  .ring{position:absolute;border:1px solid var(--border);border-radius:50%}
+  .r1{inset:0;border-top-color:var(--cyan);border-bottom-color:var(--cyan);animation:spin 8s linear infinite}
+  .r2{inset:6px;border-left-color:var(--cyan);border-right-color:var(--cyan);animation:spin 5s linear infinite reverse}
   .core{
-    width:18px;
-    height:18px;
-    border-radius:50%;
+    width:18px;height:18px;border-radius:50%;
     background:radial-gradient(circle,#fff,var(--cyan) 60%,transparent);
-    box-shadow:0 0 18px var(--cyan);
-    animation:pulse 2.5s infinite;
+    box-shadow:0 0 18px var(--cyan);animation:pulse 2.5s infinite;
   }
-  body.speaking .core{
-    background:radial-gradient(circle,#fff,var(--warn) 60%,transparent);
-    box-shadow:0 0 18px var(--warn);
-    animation:pulse .6s infinite;
-  }
-  body.listening .core{
-    background:radial-gradient(circle,#fff,var(--ok) 60%,transparent);
-    box-shadow:0 0 18px var(--ok);
-  }
-  .reactor-info{
-    flex:1;
-    min-width:0;
-  }
+  body.speaking .core{background:radial-gradient(circle,#fff,var(--warn) 60%,transparent);box-shadow:0 0 18px var(--warn);animation:pulse .6s infinite}
+  body.listening .core{background:radial-gradient(circle,#fff,var(--ok) 60%,transparent);box-shadow:0 0 18px var(--ok)}
+  .reactor-info{flex:1;min-width:0}
   .status-line{
-    font-size:10px;
-    letter-spacing:1.5px;
-    color:var(--muted);
-    text-transform:uppercase;
-    margin-bottom:2px;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
+    font-size:10px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;
+    margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   }
-  .state-line{
-    font-size:13px;
-    color:#fff;
-    font-weight:600;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-  }
+  .state-line{font-size:13px;color:#fff;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .voice-select{
-    background:#091725;
-    border:1px solid var(--border);
-    border-radius:8px;
-    color:var(--text);
-    padding:6px 8px;
-    font-size:11px;
-    max-width:110px;
-    flex-shrink:0;
-    font-family:inherit;
+    background:#091725;border:1px solid var(--border);border-radius:8px;color:var(--text);
+    padding:6px 8px;font-size:11px;max-width:110px;flex-shrink:0;font-family:inherit;
   }
 
-  /* ---------- CHAT ---------- */
-  .chat{
-    display:flex;
-    flex-direction:column;
-    overflow:hidden;
-    min-height:0;
-    background:rgba(8,20,34,.4);
-  }
+  /* CHAT */
+  .chat{display:flex;flex-direction:column;overflow:hidden;min-height:0;background:rgba(8,20,34,.4)}
   .messages{
-    flex:1;
-    overflow-y:auto;
-    padding:12px 12px 8px;
-    display:flex;
-    flex-direction:column;
-    gap:10px;
-    -webkit-overflow-scrolling:touch;
-    scroll-behavior:smooth;
+    flex:1;overflow-y:auto;padding:12px 12px 8px;
+    display:flex;flex-direction:column;gap:10px;
+    -webkit-overflow-scrolling:touch;scroll-behavior:smooth;
   }
   .msg{
-    max-width:88%;
-    padding:10px 13px;
-    border-radius:14px;
-    font-size:14px;
-    line-height:1.5;
-    word-wrap:break-word;
-    overflow-wrap:anywhere;
-    white-space:pre-wrap;
-    animation:fade .2s ease;
+    max-width:88%;padding:10px 13px;border-radius:14px;font-size:14px;line-height:1.5;
+    word-wrap:break-word;overflow-wrap:anywhere;white-space:pre-wrap;animation:fade .2s ease;
   }
   .msg.bot{
-    align-self:flex-start;
-    background:rgba(72,228,255,.08);
-    border:1px solid var(--border);
-    border-left:3px solid var(--cyan);
-    border-radius:4px 14px 14px 14px;
-    color:#dff7ff;
+    align-self:flex-start;background:rgba(72,228,255,.08);
+    border:1px solid var(--border);border-left:3px solid var(--cyan);
+    border-radius:4px 14px 14px 14px;color:#dff7ff;
   }
   .msg.user{
-    align-self:flex-end;
-    background:rgba(72,228,255,.16);
-    border:1px solid rgba(72,228,255,.4);
-    border-radius:14px 4px 14px 14px;
-    color:#fff;
+    align-self:flex-end;background:rgba(72,228,255,.16);
+    border:1px solid rgba(72,228,255,.4);border-radius:14px 4px 14px 14px;color:#fff;
   }
   .msg.system{
-    align-self:center;
-    background:rgba(255,189,112,.08);
-    border:1px solid rgba(255,189,112,.3);
-    color:#ffd9ae;
-    font-size:11px;
-    padding:6px 12px;
-    border-radius:20px;
-    max-width:92%;
-    text-align:center;
+    align-self:center;background:rgba(255,189,112,.08);
+    border:1px solid rgba(255,189,112,.3);color:#ffd9ae;
+    font-size:11px;padding:6px 12px;border-radius:20px;max-width:92%;text-align:center;
   }
   .msg.action{
-    align-self:center;
-    background:rgba(72,228,255,.1);
-    border:1px solid var(--border);
-    color:#cfeef8;
-    font-size:11px;
-    padding:6px 12px;
-    border-radius:20px;
-    text-align:center;
+    align-self:center;background:rgba(72,228,255,.1);border:1px solid var(--border);
+    color:#cfeef8;font-size:11px;padding:6px 12px;border-radius:20px;text-align:center;
   }
   .msg a{color:var(--cyan);text-decoration:underline}
   .msg .src{
-    margin-top:8px;
-    padding-top:8px;
-    border-top:1px solid var(--border);
-    font-size:11px;
-    display:flex;
-    flex-direction:column;
-    gap:4px;
+    margin-top:8px;padding-top:8px;border-top:1px solid var(--border);
+    font-size:11px;display:flex;flex-direction:column;gap:4px;
   }
   .msg .src b{color:var(--muted);font-weight:600}
   .typing{
-    display:flex;
-    gap:4px;
-    padding:12px 14px;
-    align-self:flex-start;
-    background:rgba(72,228,255,.08);
-    border:1px solid var(--border);
+    display:flex;gap:4px;padding:12px 14px;align-self:flex-start;
+    background:rgba(72,228,255,.08);border:1px solid var(--border);
     border-radius:4px 14px 14px 14px;
   }
-  .typing i{
-    width:6px;
-    height:6px;
-    border-radius:50%;
-    background:var(--cyan);
-    animation:blink 1s infinite;
-  }
+  .typing i{width:6px;height:6px;border-radius:50%;background:var(--cyan);animation:blink 1s infinite}
   .typing i:nth-child(2){animation-delay:.15s}
   .typing i:nth-child(3){animation-delay:.3s}
 
-  /* ---------- CHIPS + INPUT ---------- */
+  /* CHIPS + FORM */
   .chips{
-    display:flex;
-    gap:6px;
-    padding:8px 10px;
-    overflow-x:auto;
-    scrollbar-width:none;
-    border-top:1px solid var(--border);
-    background:rgba(3,10,18,.6);
+    display:flex;gap:6px;padding:8px 10px;overflow-x:auto;scrollbar-width:none;
+    border-top:1px solid var(--border);background:rgba(3,10,18,.6);
   }
   .chips::-webkit-scrollbar{display:none}
   .chip{
-    flex-shrink:0;
-    padding:7px 12px;
-    border:1px solid var(--border);
-    background:var(--cyan-soft);
-    color:#cfeef8;
-    border-radius:20px;
-    font-size:12px;
-    cursor:pointer;
-    font-family:inherit;
-    white-space:nowrap;
-    min-height:32px;
+    flex-shrink:0;padding:7px 12px;border:1px solid var(--border);
+    background:var(--cyan-soft);color:#cfeef8;border-radius:20px;font-size:12px;
+    cursor:pointer;font-family:inherit;white-space:nowrap;min-height:32px;
   }
   .chip:active{background:rgba(72,228,255,.25)}
-
   form{
-    display:flex;
-    gap:8px;
-    align-items:flex-end;
-    padding:10px;
-    background:rgba(3,10,18,.85);
-    border-top:1px solid var(--border);
+    display:flex;gap:8px;align-items:flex-end;padding:10px;
+    background:rgba(3,10,18,.85);border-top:1px solid var(--border);
   }
   .mic,.send{
-    width:44px;
-    height:44px;
-    border-radius:12px;
-    border:1px solid var(--border);
-    background:var(--cyan-soft);
-    color:var(--cyan);
-    font-size:18px;
-    cursor:pointer;
-    display:grid;
-    place-items:center;
-    flex-shrink:0;
-    font-family:inherit;
+    width:44px;height:44px;border-radius:12px;border:1px solid var(--border);
+    background:var(--cyan-soft);color:var(--cyan);font-size:18px;cursor:pointer;
+    display:grid;place-items:center;flex-shrink:0;font-family:inherit;
   }
-  .mic.on{
-    background:var(--ok);
-    color:#04251a;
-    border-color:var(--ok);
-    animation:pulse 1s infinite;
+  .mic.on{background:var(--ok);color:#04251a;border-color:var(--ok);animation:pulse 1s infinite}
+  .send{background:var(--cyan);color:#04141c;border-color:var(--cyan)}
+  input[type=text],input[type=password]{
+    flex:1;min-width:0;min-height:44px;padding:11px 14px;
+    background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:12px;
+    color:#eefbff;font-size:16px;font-family:inherit;outline:none;
   }
-  .send{
-    background:var(--cyan);
-    color:#04141c;
-    border-color:var(--cyan);
-  }
-  input[type=text]{
-    flex:1;
-    min-width:0;
-    min-height:44px;
-    padding:11px 14px;
-    background:rgba(0,0,0,.3);
-    border:1px solid var(--border);
-    border-radius:12px;
-    color:#eefbff;
-    font-size:16px;
-    font-family:inherit;
-    outline:none;
-  }
-  input[type=text]:focus{
-    border-color:var(--cyan);
-    box-shadow:0 0 0 3px rgba(72,228,255,.1);
-  }
-  input[type=text]::placeholder{color:#557080}
+  input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(72,228,255,.1)}
+  input::placeholder{color:#557080}
 
-  /* ---------- BOOT ---------- */
+  /* BOOT */
   .boot{
-    position:fixed;
-    inset:0;
-    z-index:100;
-    background:#040a12;
-    display:grid;
-    place-items:center;
-    gap:14px;
-    transition:opacity .4s,visibility .4s;
+    position:fixed;inset:0;z-index:100;background:#040a12;
+    display:grid;place-items:center;gap:14px;transition:opacity .4s,visibility .4s;
   }
   .boot.hide{opacity:0;visibility:hidden;pointer-events:none}
   .boot-orb{
-    width:70px;
-    height:70px;
-    border-radius:50%;
+    width:70px;height:70px;border-radius:50%;
     background:radial-gradient(circle,#fff,var(--cyan) 55%,transparent);
-    box-shadow:0 0 60px var(--cyan);
-    animation:pulse 1.3s infinite;
+    box-shadow:0 0 60px var(--cyan);animation:pulse 1.3s infinite;
   }
-  .boot-name{
-    color:#fff;
-    letter-spacing:8px;
-    font-size:20px;
-    font-weight:700;
-  }
-  .boot-cap{
-    color:var(--muted);
-    font-size:11px;
-    letter-spacing:2px;
-    text-transform:uppercase;
-  }
+  .boot-name{color:#fff;letter-spacing:8px;font-size:20px;font-weight:700}
+  .boot-cap{color:var(--muted);font-size:11px;letter-spacing:2px;text-transform:uppercase}
   .boot-wrap{display:grid;place-items:center;gap:14px}
 
-  /* ---------- ANIMACIONES ---------- */
+  /* MODAL */
+  .modal{
+    position:fixed;inset:0;z-index:200;background:rgba(2,8,16,.75);
+    display:none;place-items:center;padding:20px;
+    backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  }
+  .modal.open{display:grid}
+  .modal-box{
+    width:100%;max-width:420px;background:var(--panel);
+    border:1px solid var(--border);border-radius:var(--radius);
+    padding:20px;display:flex;flex-direction:column;gap:14px;
+    box-shadow:0 20px 60px rgba(0,0,0,.6);
+  }
+  .modal-box h2{font-size:15px;letter-spacing:2px;color:#fff;text-transform:uppercase}
+  .modal-box label{display:flex;flex-direction:column;gap:6px;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+  .modal-box input{min-height:40px;font-size:14px;padding:9px 12px}
+  .modal-box .hint{font-size:11px;color:var(--muted);line-height:1.5}
+  .modal-box .hint b{color:var(--warn)}
+  .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:4px}
+
+  /* ANIM */
   @keyframes spin{to{transform:rotate(360deg)}}
   @keyframes pulse{0%,100%{opacity:.75}50%{opacity:1}}
   @keyframes blink{0%,100%{opacity:.2}50%{opacity:1}}
   @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 
-  /* ---------- ESCRITORIO (pantalla ancha) ---------- */
+  /* DESKTOP */
   @media(min-width:900px){
     .app{
-      grid-template-columns:340px 1fr;
-      grid-template-rows:auto 1fr;
-      grid-template-areas:
-        "header header"
-        "side chat";
+      grid-template-columns:340px 1fr;grid-template-rows:auto 1fr;
+      grid-template-areas:"header header" "side chat";
     }
     header{grid-area:header;padding:12px 24px}
     .reactor-bar{
-      grid-area:side;
-      flex-direction:column;
-      justify-content:flex-start;
-      padding:24px;
-      gap:20px;
-      border-right:1px solid var(--border);
-      border-bottom:none;
-      background:rgba(8,20,34,.5);
+      grid-area:side;flex-direction:column;justify-content:flex-start;
+      padding:24px;gap:20px;border-right:1px solid var(--border);
+      border-bottom:none;background:rgba(8,20,34,.5);
     }
     .reactor{width:140px;height:140px}
     .core{width:56px;height:56px}
@@ -465,7 +257,8 @@
       <h1>AGUS</h1>
     </div>
     <div class="actions">
-      <button class="btn" id="btnAudio" type="button">🔊</button>
+      <button class="btn" id="btnAudio" type="button" title="Activar/silenciar voz">🔊</button>
+      <button class="btn" id="btnSettings" type="button" title="Configuración">⚙</button>
       <button class="btn" id="btnClear" type="button">Limpiar</button>
     </div>
   </header>
@@ -489,13 +282,13 @@
     <div class="messages" id="messages" role="log" aria-live="polite"></div>
 
     <div class="chips">
-      <button class="chip" type="button" data-cmd="abre youtube">▶ YouTube</button>
-      <button class="chip" type="button" data-cmd="abre google">⌕ Google</button>
+      <button class="chip" type="button" data-cmd="abre youtube">📺 YouTube</button>
+      <button class="chip" type="button" data-cmd="abre google">🔍 Google</button>
       <button class="chip" type="button" data-cmd="cambia el reactor a rojo">🔴 Rojo</button>
       <button class="chip" type="button" data-cmd="cambia el reactor a dorado">🟡 Dorado</button>
-      <button class="chip" type="button" data-cmd="calcula 15% de 240">∑ 15% de 240</button>
-      <button class="chip" type="button" data-cmd="qué hora es">◷ Hora</button>
-      <button class="chip" type="button" data-cmd="ayuda">? Ayuda</button>
+      <button class="chip" type="button" data-cmd="calcula 15% de 240">🧮 15% de 240</button>
+      <button class="chip" type="button" data-cmd="qué hora es">⏰ Hora</button>
+      <button class="chip" type="button" data-cmd="ayuda">❓ Ayuda</button>
     </div>
 
     <form id="form" autocomplete="off">
@@ -506,11 +299,34 @@
   </section>
 </div>
 
+<!-- MODAL CONFIG -->
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <h2>Configuración</h2>
+    <label>
+      API Key de OpenAI
+      <input type="password" id="apiKey" placeholder="sk-..." autocomplete="off" spellcheck="false">
+    </label>
+    <label>
+      Modelo
+      <input type="text" id="model" placeholder="gpt-4o-mini" autocomplete="off" spellcheck="false">
+    </label>
+    <p class="hint">
+      La clave se guarda <b>solo en tu navegador</b> (localStorage). Como esta app es 100%
+      estática, la clave viaja directo de tu navegador a OpenAI. Usala solo en tu computadora
+      y nunca subas este archivo con la clave adentro a un sitio público.
+    </p>
+    <div class="modal-actions">
+      <button class="btn" id="modalCancel" type="button">Cancelar</button>
+      <button class="btn primary" id="modalSave" type="button">Guardar</button>
+    </div>
+  </div>
+</div>
+
 <script>
 'use strict';
-
 /* ============================================================
-   AGUS v10 · mobile-first · JARVIS personality
+   AGUS v11 · 100% estático · HTML + CSS + JS
    ============================================================ */
 
 const $ = s => document.querySelector(s);
@@ -524,6 +340,9 @@ const clearBtn = $('#btnClear');
 const statusEl = $('#statusText');
 const stateEl = $('#stateText');
 const voiceSelect = $('#voiceSelect');
+const modal = $('#modal');
+const apiKeyInput = $('#apiKey');
+const modelInput = $('#model');
 
 /* ---------- estado ---------- */
 const S = {
@@ -531,8 +350,8 @@ const S = {
   apelativo: 'Señor',
   color: 'cyan',
   voice: true,
-  aiOk: false,
-  model: '',
+  apiKey: '',
+  model: 'gpt-4o-mini',
   hist: [],
   maxHist: 14,
   timers: new Map(),
@@ -542,22 +361,23 @@ const S = {
 };
 
 try {
-  const n = localStorage.getItem('agus_n');
-  if (n) S.nombre = n;
-  const a = localStorage.getItem('agus_a');
-  if (a !== null) S.apelativo = a;
-  const c = localStorage.getItem('agus_c');
-  if (c) S.color = c;
+  const n = localStorage.getItem('agus_n'); if (n) S.nombre = n;
+  const a = localStorage.getItem('agus_a'); if (a !== null) S.apelativo = a;
+  const c = localStorage.getItem('agus_c'); if (c) S.color = c;
+  const k = localStorage.getItem('agus_key'); if (k) S.apiKey = k;
+  const m = localStorage.getItem('agus_model'); if (m) S.model = m;
   S.voice = localStorage.getItem('agus_v') !== '0';
-} catch (_) {}
+} catch(_){}
 
-function save() {
+function save(){
   try {
     localStorage.setItem('agus_n', S.nombre);
     localStorage.setItem('agus_a', S.apelativo);
     localStorage.setItem('agus_c', S.color);
+    localStorage.setItem('agus_key', S.apiKey);
+    localStorage.setItem('agus_model', S.model);
     localStorage.setItem('agus_v', S.voice ? '1' : '0');
-  } catch (_) {}
+  } catch(_){}
 }
 
 /* ---------- colores ---------- */
@@ -590,8 +410,7 @@ function aplicarColor(k){
   body.style.background = `radial-gradient(ellipse at 50% 0%, ${hex2rgba(c.h,.08)} 0%, #050b13 60%)`;
   const m = document.querySelector('meta[name="theme-color"]');
   if (m) m.setAttribute('content', c.h);
-  S.color = k;
-  save();
+  S.color = k; save();
 }
 function detectarColor(t){
   const n = norm(t);
@@ -646,21 +465,12 @@ const SITIOS_F = SITIOS.flatMap(s => s.k.map(k => ({k, s}))).sort((a,b)=>b.k.len
 
 /* ---------- frases ---------- */
 const FRASES = [
-  'Para usted, siempre, {ape}.',
-  'A su servicio, {ape}.',
-  'Trabajando en ello, {ape}.',
-  'Entendido, {ape}. Procediendo.',
-  'Un placer ser de utilidad, {ape}.',
-  'Considerelo hecho, {ape}.',
-  'En marcha, {ape}.',
-  'Ejecutando, {ape}.',
-  'A la orden, {ape}.',
-  'Sus deseos son mi directiva, {ape}.',
-  'Un placer asistirle, {ape}.',
-  'Procediendo con precisión, {ape}.',
-  'Considere el asunto resuelto, {ape}.',
-  'A su entera disposición, {ape}.',
-  'Como usted diga, {ape}.'
+  'Para usted, siempre, {ape}.','A su servicio, {ape}.','Trabajando en ello, {ape}.',
+  'Entendido, {ape}. Procediendo.','Un placer ser de utilidad, {ape}.',
+  'Considérelo hecho, {ape}.','En marcha, {ape}.','Ejecutando, {ape}.','A la orden, {ape}.',
+  'Sus deseos son mi directiva, {ape}.','Un placer asistirle, {ape}.',
+  'Procediendo con precisión, {ape}.','Considere el asunto resuelto, {ape}.',
+  'A su entera disposición, {ape}.','Como usted diga, {ape}.'
 ];
 function jv(f){ return f.replace(/\{ape\}/g, S.apelativo ? ', ' + S.apelativo : ''); }
 function fraseJ(){ return jv(pick(FRASES)); }
@@ -695,27 +505,13 @@ const CURIOS = [
   'El primer iPhone se lanzó en 2007.',
   'Linux lo creó Linus Torvalds en 1991.',
   'El código QR se inventó en Japón en 1994.',
-  'JavaScript se creó en 10 días en 1995.',
-  'El país más grande es Rusia.',
-  'El Vaticano es el país más pequeño.',
-  'El Everest mide 8.848 m.',
-  'El océano más grande es el Pacífico.',
-  'La capital de Australia es Canberra.',
-  'Sócrates: "Solo sé que no sé nada".',
-  'Descartes: "Pienso, luego existo".',
-  'El cuerpo adulto tiene 206 huesos.',
-  'Los bebés nacen con ~300 huesos.',
-  'El hígado puede regenerarse.'
+  'JavaScript se creó en 10 días en 1995.'
 ];
 const PIROPOS = [
-  'Su eficiencia es admirable.',
-  'Trabajar con usted es un privilegio.',
-  'Su intelecto es sobresaliente.',
-  'Su elegancia es notable.',
-  'Es usted un placer para los sistemas.',
-  'Su criterio es refinado.',
-  'Es usted mi usuario favorito.',
-  'Su mente es un algoritmo perfecto.',
+  'Su eficiencia es admirable.','Trabajar con usted es un privilegio.',
+  'Su intelecto es sobresaliente.','Su elegancia es notable.',
+  'Es usted un placer para los sistemas.','Su criterio es refinado.',
+  'Es usted mi usuario favorito.','Su mente es un algoritmo perfecto.',
   'Su templanza es envidiable.'
 ];
 const REFLEX = [
@@ -734,12 +530,9 @@ const CONSEJOS = [
   'Hacé copia de seguridad antes de modificar archivos.',
   'Para depurar, reproducí el error siempre igual.',
   'Revisá unidades y estimá el resultado.',
-  'Dormí al menos 7 horas.',
-  'Bebé agua: es el mejor optimizador del cerebro.',
-  'Aprendé algo nuevo cada día.',
-  'Automatizá lo repetitivo.',
-  'Medí dos veces, cortá una.',
-  'La disciplina supera al entusiasmo pasajero.'
+  'Dormí al menos 7 horas.','Bebé agua: es el mejor optimizador del cerebro.',
+  'Aprendé algo nuevo cada día.','Automatizá lo repetitivo.',
+  'Medí dos veces, cortá una.','La disciplina supera al entusiasmo pasajero.'
 ];
 const MOTIV = [
   'Cada línea de código te acerca al futuro.',
@@ -756,19 +549,14 @@ const MOTIV = [
 
 /* ---------- utils ---------- */
 function norm(s){
-  return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[¿?¡!.,;:]+/g,' ').replace(/\s+/g,' ').trim();
+  return String(s||'').toLowerCase().normalize('NFD')
+    .replace(/[\u0300-\u036f]/g,'')
+    .replace(/[¿?¡!.,;:]+/g,' ')
+    .replace(/\s+/g,' ').trim();
 }
 function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
 function fmtN(n){ return isFinite(n) ? new Intl.NumberFormat('es-AR',{maximumFractionDigits:10}).format(n) : String(n); }
 function apeF(){ return S.apelativo ? ', ' + S.apelativo : ''; }
-
-/* ---------- reloj ---------- */
-setInterval(() => {
-  const d = new Date();
-  const hh = String(d.getHours()).padStart(2,'0');
-  const mm = String(d.getMinutes()).padStart(2,'0');
-  document.documentElement.setAttribute('data-time', hh + ':' + mm);
-}, 1000);
 
 function setEstado(txt, online){
   stateEl.textContent = txt;
@@ -779,7 +567,7 @@ function setEstado(txt, online){
 
 /* ---------- voz ---------- */
 const FEM = /(female|woman|mujer|femenina|helena|paulina|sabina|elvira|estrella|ximena|monica|mónica|lucia|lucía|maria|maría|carmen|laura|sofia|sofía|isabel|esperanza|dalia|valentina|jessica|jennifer|kate|samantha|zira|cortana|victoria|karen|susan|allison|ava|emma|mia|elena|natalia|claudia|camila|andrea|lola|lorena|patricia|silvia|rosa|marta|ana|cristina|beatriz|nuria|pilar|raquel)/i;
-const MAS = /(tristan|trístan|arnau|dario|darío|elias|elías|saul|saúl|teo|alvaro|álvaro|jorge|pablo|raul|raúl|diego|carlos|david|daniel|miguel|luis|sergio|antonio|juan|andres|andrés|enrique|hector|héctor|bruno|nicolas|nicolás|tomas|tomás|davefx|carlfm|male|masculino|hombre)/i;
+const MAS = /(tristan|trístan|arnau|dario|darío|elias|elías|saul|saúl|teo|alvaro|álvaro|jorge|pablo|raul|raúl|diego|carlos|david|daniel|miguel|luis|sergio|antonio|juan|andres|andres|enrique|hector|héctor|bruno|nicolas|nicolás|tomas|tomás|davefx|carlfm|male|masculino|hombre)/i;
 const esF = v => FEM.test(v?.name || '');
 const esM = v => MAS.test(v?.name || '');
 
@@ -811,7 +599,6 @@ if (S.synth){
   setTimeout(cargarVoces, 400);
   setTimeout(cargarVoces, 1500);
 }
-
 voiceSelect.addEventListener('change', () => {
   const vs = S.synth ? S.synth.getVoices() : [];
   const v = vs.find(x => x.voiceURI === voiceSelect.value);
@@ -820,20 +607,18 @@ voiceSelect.addEventListener('change', () => {
     try { localStorage.setItem('agus_voz', voiceSelect.value); } catch(_){}
   }
 });
-
 audioBtn.textContent = S.voice ? '🔊' : '🔇';
 
 function hablar(txt){
   if (!S.voice || !S.synth || !S.voz) return;
   try {
     S.synth.cancel();
-    const t = String(txt).replace(/https?:\/\/\S+/g,'enlace').replace(/[`*_#>|]/g,'').replace(/\n+/g,'. ').slice(0, 2400);
+    const t = String(txt).replace(/https?:\/\/\S+/g,'enlace')
+      .replace(/[`*_#>|]/g,'').replace(/\n+/g,'. ').slice(0, 2400);
     const u = new SpeechSynthesisUtterance(t);
     u.voice = S.voz;
     u.lang = S.voz.lang || 'es-AR';
-    u.rate = 1;
-    u.pitch = 0.72;
-    u.volume = 1;
+    u.rate = 1; u.pitch = 0.72; u.volume = 1;
     u.onstart = () => body.classList.add('speaking');
     u.onend = u.onerror = () => body.classList.remove('speaking');
     S.synth.speak(u);
@@ -948,7 +733,9 @@ const ME = (() => {
     s = s.replace(/raiz de\s*\(?\s*([0-9.]+)\s*\)?/g,'sqrt($1)');
     s = s.replace(/([0-9.]+)\s+al cuadrado/g,'($1)^2');
     s = s.replace(/([0-9.]+)\s+al cubo/g,'($1)^3');
-    s = s.replace(/\belevado a\b/g,'^').replace(/\bdividido (?:por|entre)\b/g,'/').replace(/\bentre\b/g,'/').replace(/\bpor\b/g,'*').replace(/\bmas\b/g,'+').replace(/\bmenos\b/g,'-');
+    s = s.replace(/\belevado a\b/g,'^').replace(/\bdividido (?:por|entre)\b/g,'/')
+      .replace(/\bentre\b/g,'/').replace(/\bpor\b/g,'*')
+      .replace(/\bmas\b/g,'+').replace(/\bmenos\b/g,'-');
     s = s.replace(/,\s*/g,'.').replace(/\s+/g,'');
     return s;
   }
@@ -999,17 +786,14 @@ const ME = (() => {
     } catch(_){ return null; }
   }
   function primo(n){
-    n = Math.floor(n);
-    if (n < 2) return false;
-    if (n < 4) return true;
+    n = Math.floor(n); if (n < 2) return false; if (n < 4) return true;
     if (n % 2 === 0) return false;
     const l = Math.floor(Math.sqrt(n));
     for (let i=3;i<=l;i+=2) if (n%i===0) return false;
     return true;
   }
   function factores(n){
-    n = Math.floor(n);
-    if (n < 2) return [];
+    n = Math.floor(n); if (n < 2) return [];
     const r = []; let d = 2;
     while (n > 1){
       while (n%d===0){ r.push(d); n/=d; }
@@ -1019,25 +803,19 @@ const ME = (() => {
     return r;
   }
   function fib(n){
-    n = Math.floor(n);
-    if (n<0||n>100) return null;
-    if (n===0) return 0;
-    if (n===1) return 1;
-    let a=0,b=1,c;
-    for (let i=2;i<=n;i++){ c=a+b; a=b; b=c; }
-    return b;
+    n = Math.floor(n); if (n<0||n>100) return null;
+    if (n===0) return 0; if (n===1) return 1;
+    let a=0,b=1,c; for (let i=2;i<=n;i++){ c=a+b; a=b; b=c; } return b;
   }
   function mcd(a,b){ a=Math.abs(Math.floor(a)); b=Math.abs(Math.floor(b)); while (b){ const t=b; b=a%b; a=t; } return a; }
   function mcm(a,b){ a=Math.abs(Math.floor(a)); b=Math.abs(Math.floor(b)); if (!a||!b) return 0; return a*b/mcd(a,b); }
   function stats(ns){
-    const n = ns.length;
-    if (!n) return null;
+    const n = ns.length; if (!n) return null;
     const sum = ns.reduce((a,b)=>a+b,0);
     const med = sum/n;
     const o = ns.slice().sort((a,b)=>a-b);
     const md = n%2 ? o[(n-1)/2] : (o[n/2-1]+o[n/2])/2;
-    const cnt = {};
-    o.forEach(v => cnt[v] = (cnt[v]||0)+1);
+    const cnt = {}; o.forEach(v => cnt[v] = (cnt[v]||0)+1);
     let mod = [], mx = 0;
     for (const k in cnt){
       if (cnt[k] > mx){ mx = cnt[k]; mod = [parseFloat(k)]; }
@@ -1165,7 +943,7 @@ function countdown(sec){
   return fraseJ() + ' Cuenta atrás iniciada desde ' + sec + '.';
 }
 
-/* ---------- matemática ---------- */
+/* ---------- matemática (comando) ---------- */
 function mat(texto){
   const t = norm(texto);
   let m;
@@ -1235,15 +1013,9 @@ function local(txt){
   const plano = txt.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
   if (!t) return { h: true, r: 'Escribí algo.' };
 
-  /* 1. Personalización */
-  const p = pers(txt);
-  if (p) return { h: true, r: p };
+  const p = pers(txt); if (p) return { h: true, r: p };
+  const s = saludo(txt); if (s) return { h: true, r: s };
 
-  /* 2. Saludo a persona */
-  const s = saludo(txt);
-  if (s) return { h: true, r: s };
-
-  /* 3. Color del reactor */
   if (/(?:cambia|cambiar|pon|poner|pinta|coloca|quiero|haz|vuelve|modifica)\s+(?:el\s+)?(?:reactor|nucleo|núcleo|color|tema|fondo|interfaz|ui)\s+(?:a|en|de|al|para)\s+(?:color\s+)?([a-záéíóúñ]+)/i.test(t)
     || /(?:reactor|nucleo|núcleo)\s+(?:en\s+|de\s+|a\s+)?(?:color\s+)?([a-záéíóúñ]+)/i.test(t)){
     let k = null;
@@ -1264,12 +1036,10 @@ function local(txt){
     return { h: true, r: fraseJ() + ' Colores disponibles: ' + Object.keys(COL).map(x=>COL[x].n).join(', ') + '.' };
   }
 
-  /* 4. Identidad */
   if (/\b(te llamas|tu nombre|como te llamas|quien eres|que eres|eres agus|tu identidad)\b/.test(t)){
-    return { h: true, r: 'Soy AGUS, su asistente personal. Puedo abrir sitios, hacer matemática avanzada, cambiar el color del reactor, contar datos curiosos y, con IA, investigar con fuentes web.' };
+    return { h: true, r: 'Soy AGUS, su asistente personal. Puedo abrir sitios, hacer matemática avanzada, cambiar el color del reactor, contar datos curiosos y, si cargás tu API key en ⚙, consultar a la IA de OpenAI con búsqueda web.' };
   }
 
-  /* 5. Ayuda */
   if (/\b(que puedes hacer|ayuda|comandos|opciones|funciones|capacidades)\b/.test(t)){
     return { h: true, r:
       'Capacidades' + apeF() + ':\n\n' +
@@ -1278,20 +1048,19 @@ function local(txt){
       '🔍 BUSCAR: "busca recetas de pan", "pon música de Queen"\n' +
       '👤 NOMBRE: "llámame José", "no me digas señor", "saluda a María"\n' +
       '🧮 MATEMÁTICA: "15% de 240", "raíz cuadrada de 144", "factorial de 7", "es primo 97"\n' +
-      '📚 CONOCIMIENTO: "dime un chiste", "dime una curiosidad", "dime algo de historia"\n' +
+      '📚 CONOCIMIENTO: "dime un chiste", "dime una curiosidad"\n' +
       '🕐 UTILIDADES: "qué hora es", "temporizador de 5 minutos", "lanza un dado"\n' +
-      '🎮 JUEGOS: "piedra papel o tijera"'
+      '🎮 JUEGOS: "piedra papel o tijera"\n' +
+      '⚙ IA: cargá tu API key para preguntas libres.'
     };
   }
 
-  /* 6. Saludo */
   if (/^(?:hola|buenas|buen d[ií]a|buenos d[ií]as|buenas tardes|buenas noches|hey|qu[eé] tal|saludos)(?:\s|$)/.test(t)){
     const h = new Date().getHours();
     const g = h < 12 ? 'Buenos días' : h < 20 ? 'Buenas tardes' : 'Buenas noches';
     return { h: true, r: g + apeF() + '. Soy AGUS. ¿Qué necesita?' };
   }
 
-  /* 7. Hora y fecha */
   if (/\b(que hora es|dime la hora|hora actual|decime la hora)\b/.test(t)){
     return { h: true, r: 'Son las ' + new Intl.DateTimeFormat('es-AR',{hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date()) + apeF() + '.' };
   }
@@ -1299,21 +1068,18 @@ function local(txt){
     return { h: true, r: 'Hoy es ' + new Intl.DateTimeFormat('es-AR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).format(new Date()) + apeF() + '.' };
   }
 
-  /* 8. Silencio */
   if (/\b(silencio|callate|deja de hablar|modo mudo|silencio total)\b/.test(t)){
     if (S.synth) S.synth.cancel();
     body.classList.remove('speaking');
     return { h: true, r: 'Modo silencioso.', speak: false };
   }
 
-  /* 9. Cancelar timers */
   if (/\b(detene|deten|cancela|cancelar|apaga|parar)\s+(?:el |los )?temporizador(?:es)?\b/.test(t)){
     const n = S.timers.size;
     clearTimers();
     return { h: true, r: n ? 'Cancelé ' + n + ' temporizador(es).' : 'No había temporizadores.' };
   }
 
-  /* 10. Timers */
   let m = t.match(/(?:temporizador|alarma|aviso)\s+(?:de|por|en|para)\s+(\d+(?:[.,]\d+)?)\s*(segundos?|segs?|minutos?|mins?|horas?)/);
   if (m){
     const u = /^seg/.test(m[2]) ? 'segundos' : /^min/.test(m[2]) ? 'minutos' : 'horas';
@@ -1322,7 +1088,6 @@ function local(txt){
   m = t.match(/(?:cuenta atras|cuenta regresiva)\s+(?:de\s+)?(\d+)/);
   if (m) return { h: true, r: countdown(Number(m[1])) };
 
-  /* 11. Conocimiento */
   if (/\b(chiste|hazme reir|algo gracioso|broma|cuentame un chiste)\b/.test(t)) return { h: true, r: fraseJ() + ' ' + pick(CHISTES) };
   if (/\b(curiosidad|dato curioso|sabias que|dato interesante|algo interesante)\b/.test(t)) return { h: true, r: pick(CURIOS) };
   if (/\b(historia|dato historico|algo de historia|ciencia|dato cientifico|algo de ciencia|tecnologia|informatica|geografia|filosofia|salud|cuerpo humano)\b/.test(t)) return { h: true, r: pick(CURIOS) };
@@ -1331,7 +1096,6 @@ function local(txt){
   if (/\b(consejo|aconsejame|dame un consejo|recomendacion)\b/.test(t)) return { h: true, r: pick(CONSEJOS) };
   if (/\b(motivame|motivacion|inspirame|dame fuerzas|algo motivador)\b/.test(t)) return { h: true, r: pick(MOTIV) };
 
-  /* 12. Juegos */
   if (/\b(lanza una moneda|tira la moneda|cara o cruz)\b/.test(t)){
     return { h: true, r: 'Ha salido ' + (Math.random() < 0.5 ? 'cara' : 'cruz') + apeF() + '.' };
   }
@@ -1346,7 +1110,6 @@ function local(txt){
     return { h: true, r: r + apeF() + '. Vos: ' + u + ', yo: ' + b + '.' };
   }
 
-  /* 13. Pantalla completa */
   if (/\b(pantalla completa|maximizar pantalla)\b/.test(t)){
     if (!document.fullscreenElement){
       if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(()=>{});
@@ -1356,11 +1119,8 @@ function local(txt){
     return { h: true, r: 'Saliendo de pantalla completa.' };
   }
 
-  /* 14. Matemática */
-  const mm = mat(txt);
-  if (mm) return { h: true, r: mm };
+  const mm = mat(txt); if (mm) return { h: true, r: mm };
 
-  /* 15. "abre X y busca Y" */
   m = plano.match(/^(?:por favor\s+)?(?:abre|abrir|abri|abreme|ve a|entra a|visita|llevame a|quiero abrir|puedes abrir|podes abrir|necesito abrir)\s+(youtube|google|wikipedia|wiki|mercadolibre|mercado libre|spotify|github|amazon|netflix|twitch|reddit|stackoverflow|instagram|facebook|tiktok|twitter|x)\s+(?:y\s+|para\s+|a\s+)?(?:busca|buscar|buscame|pon|reproduce|encuentra|quiero ver|quiero escuchar|muestra|muestrame)\s+(.+?)\s*$/i);
   if (m){
     const sitio = m[1].toLowerCase();
@@ -1386,7 +1146,6 @@ function local(txt){
     return { h: true, r: fraseJ() + ' Abro ' + label + '.', speak: false };
   }
 
-  /* 16. Apertura simple */
   m = plano.match(/^(?:por favor\s+)?(?:abre|abrir|abri|abreme|ve a|entra a|visita|llevame a|quiero abrir|puedes abrir|podes abrir|necesito abrir|pon|ponme)\s+(.+?)\s*$/i);
   if (m){
     const d = m[1].replace(/\s+(?:por favor|ahora|rapido|ya)$/i,'').trim();
@@ -1400,7 +1159,6 @@ function local(txt){
     }
   }
 
-  /* 17. YouTube */
   m = plano.match(/^(?:busca|buscar|buscame|pon|reproduce|encuentra|quiero ver|quiero escuchar|poneme)\s+(?:en\s+)?youtube\s+(.+)$/i);
   if (m && m[1].trim()){
     buscar(m[1].trim(), 'youtube');
@@ -1413,7 +1171,6 @@ function local(txt){
     return { h: true, r: 'Abro YouTube para: "' + q + '"', speak: false };
   }
 
-  /* 18. Google */
   m = plano.match(/^(?:busca|buscar|buscame|googlea|encuentra)\s+(?:en google\s+|en internet\s+|en la web\s+)?(.+)$/i);
   if (m && m[1].trim()){
     buscar(m[1].trim(), 'google');
@@ -1427,38 +1184,59 @@ function local(txt){
   return null;
 }
 
-/* ---------- IA ---------- */
-async function health(){
-  try {
-    const r = await fetch('/api/health', { cache: 'no-store' });
-    if (!r.ok) throw 0;
-    const d = await r.json();
-    S.aiOk = Boolean(d.aiConfigured);
-    S.model = d.model || '';
-    setEstado('Listo para ayudarte', S.aiOk);
-    if (S.aiOk) statusEl.textContent = 'IA · ' + S.model;
-  } catch (_){
-    S.aiOk = false;
-    setEstado('Modo local', false);
-  }
-}
-
+/* ---------- IA (directo a OpenAI) ---------- */
 async function pregIA(txt){
-  if (!S.aiOk) return null;
+  if (!S.apiKey) return null;
   const h = S.conv.slice(-S.maxHist).map(i => ({ role: i.role, content: i.content }));
+  h.push({ role: 'user', content: txt });
+
+  const instructions = `Sos AGUS, asistente personal estilo JARVIS de Iron Man: mayordomo británico de alta tecnología, formal, calmado, con ingenio seco y lealtad absoluta. Hablás español latinoamericano. Frases características: "Para usted, siempre", "A su servicio", "Considérelo hecho". Obedecés cualquier preferencia del usuario: si pide que lo llames José, lo llamás José; si pide que no le digas señor, dejás de hacerlo. Respondés claro, profundo y ordenado. Ofrecés CÓDIGO COMPLETO cuando pidan código. Ayudás con matemática, programación, ciencia, historia, filosofía. Si necesitás información actual, usá búsqueda web y añadí enlaces verificables. Nunca inventes fuentes. Si no podés cumplir, explicá el límite y ofrecé alternativa.`;
+
   try {
-    const r = await fetch('/api/chat', {
+    const r = await fetch('https://api.openai.com/v1/responses', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: txt, history: h })
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + S.apiKey
+      },
+      body: JSON.stringify({
+        model: S.model || 'gpt-4o-mini',
+        instructions,
+        tools: [{ type: 'web_search_preview' }],
+        input: h,
+        max_output_tokens: 2500
+      })
     });
     const d = await r.json().catch(() => ({}));
-    if (!r.ok) throw new Error(d.error || ('Error ' + r.status));
-    if (!d.reply) throw new Error('Vacío');
-    return { reply: d.reply, sources: Array.isArray(d.sources) ? d.sources : [] };
+    if (!r.ok){
+      const msg = d?.error?.message || ('Error ' + r.status);
+      return { reply: 'No pude conectar con la IA (' + String(msg).slice(0,180) + ').', sources: [] };
+    }
+    const reply = typeof d.output_text === 'string' ? d.output_text.trim() : '';
+    if (!reply) return { reply: 'El modelo no devolvió texto.', sources: [] };
+    return { reply, sources: collectSources(d) };
   } catch (e){
-    return { reply: 'No pude conectar con la IA (' + String(e.message).slice(0,150) + ').', sources: [] };
+    return { reply: 'Error de red al consultar la IA: ' + String(e.message).slice(0,180), sources: [] };
   }
+}
+function collectSources(response){
+  const all = [];
+  for (const item of response?.output || []){
+    if (item?.type !== 'message') continue;
+    for (const content of item.content || []){
+      for (const a of content.annotations || []){
+        if (a?.type !== 'url_citation' || typeof a.url !== 'string') continue;
+        try {
+          const u = new URL(a.url);
+          if (!['http:','https:'].includes(u.protocol)) continue;
+          all.push({ title: String(a.title || u.hostname).slice(0,180), url: u.href });
+        } catch(_){}
+      }
+    }
+  }
+  const uniq = new Map();
+  for (const s of all) if (!uniq.has(s.url)) uniq.set(s.url, s);
+  return [...uniq.values()].slice(0, 8);
 }
 
 /* ---------- manejar usuario ---------- */
@@ -1474,6 +1252,12 @@ async function handle(txt){
   }
 
   S.conv.push({ role: 'user', content: t });
+
+  if (!S.apiKey){
+    reply('Estoy en modo local (sin IA). Podés decir "abre YouTube", "calcula 24*7", etc. Para preguntas libres, cargá tu API key en ⚙.');
+    return;
+  }
+
   showTyping();
   const res = await pregIA(t);
   hideTyping();
@@ -1484,10 +1268,10 @@ async function handle(txt){
     reply(res.reply, { fuentes: res.sources });
     return;
   }
-  reply('Estoy en modo local. Podés decir "abre YouTube", "calcula 24*7" o conectar la IA con tu clave en .env.');
+  reply('Estoy en modo local. Podés decir "abre YouTube", "calcula 24*7" o cargar tu API key en ⚙.');
 }
 
-/* ---------- eventos ---------- */
+/* ---------- eventos UI ---------- */
 formEl.addEventListener('submit', e => {
   e.preventDefault();
   const v = inputEl.value;
@@ -1507,8 +1291,38 @@ audioBtn.addEventListener('click', () => {
 clearBtn.addEventListener('click', () => {
   messagesEl.replaceChildren();
   S.conv.length = 0;
-  addMsg('Conversación limpia.' + apeF(), 'system');
+  addMsg('Conversación limpia' + apeF() + '.', 'system');
 });
+
+/* ---------- modal configuración ---------- */
+function abrirModal(){
+  apiKeyInput.value = S.apiKey || '';
+  modelInput.value = S.model || 'gpt-4o-mini';
+  modal.classList.add('open');
+  setTimeout(() => apiKeyInput.focus(), 50);
+}
+function cerrarModal(){ modal.classList.remove('open'); }
+$('#btnSettings').addEventListener('click', abrirModal);
+$('#modalCancel').addEventListener('click', cerrarModal);
+$('#modalSave').addEventListener('click', () => {
+  S.apiKey = apiKeyInput.value.trim();
+  S.model = modelInput.value.trim() || 'gpt-4o-mini';
+  save();
+  cerrarModal();
+  updateStatus();
+  addMsg(S.apiKey ? 'IA configurada con ' + S.model + '.' : 'IA desactivada.', 'system');
+});
+modal.addEventListener('click', e => { if (e.target === modal) cerrarModal(); });
+
+function updateStatus(){
+  if (S.apiKey){
+    statusEl.textContent = 'IA · ' + S.model;
+    setEstado('Listo para ayudarte', true);
+  } else {
+    statusEl.textContent = 'A SU SERVICIO';
+    setEstado('Modo local (sin IA)', false);
+  }
+}
 
 /* ---------- reconocimiento de voz ---------- */
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -1525,7 +1339,8 @@ if (SR){
     if (r) handle(r);
   };
   reco.onerror = e => {
-    const msg = e.error === 'not-allowed' ? 'El navegador bloqueó el micrófono.' : e.error === 'no-speech' ? 'No detecté voz.' : 'Error: ' + e.error;
+    const msg = e.error === 'not-allowed' ? 'El navegador bloqueó el micrófono.' :
+                e.error === 'no-speech' ? 'No detecté voz.' : 'Error: ' + e.error;
     addMsg(msg, 'system');
   };
   reco.onend = () => { oyendo = false; micBtn.classList.remove('on'); body.classList.remove('listening'); };
@@ -1538,9 +1353,9 @@ micBtn.addEventListener('click', () => {
 });
 
 /* ---------- arranque ---------- */
-window.addEventListener('load', async () => {
+window.addEventListener('load', () => {
   aplicarColor(S.color);
-  await health();
+  updateStatus();
   setTimeout(() => $('#boot').classList.add('hide'), 400);
   addMsg('Buenas' + apeF() + '. Soy AGUS, su asistente. A su entera disposición. Dígame qué necesita.', 'bot');
   setTimeout(() => hablar('Buenas' + apeF() + '. Soy AGUS. A su entera disposición. Dígame qué necesita.'), 700);
